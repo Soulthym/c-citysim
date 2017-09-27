@@ -1,0 +1,17 @@
+1		: pieton N
+2		: pieton E
+4		: pieton S
+8		: pieton W
+16		: voiture N
+32		: voiture E
+64		: voiture S
+128		: voiture W
+256		: feu voiture
+512		: ceder voiture
+1024	: parking
+2048	: train N
+4096	: train S
+8192	: cache
+
+
+pieton E + voiture N = 2 + 16 = 18 // bx 0001_0010
