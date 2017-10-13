@@ -5,4 +5,9 @@
 #include <stdlib.h>
 #include "lib/libs.h"
 
+typedef struct {
+	char *disp;
+	char *color;
+}map;
+
 #endif

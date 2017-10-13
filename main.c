@@ -32,12 +32,46 @@ encod *ChargerEncodage(char *fichier) {
 	}
 }
 
-void LoadMap(char *fichier){
-
+map **LoadMap(char *fichier){
+	FILE *F = fopen(fichier, "r");
+	if (F == NULL) {
+		printf(">>%s not found\n", fichier);
+		return NULL;
+	} else {
+		int nbcol, nblin, x = 0, y = 0;
+		fscanf(F,"%d %d\n", &nbcol, &nblin);
+		map **M = malloc(sizeof(map*) * nblin);
+		for (int i = 0; i < nblin; i++) {
+			M[i] = malloc(sizeof(map) * nbcol);
+		}
+		printf(">>loading %s\n", fichier);
+		for (char c = fgetc(F); c != EOF; c = fgetc(F), x++){
+			if (c == '\n') {
+				printf("\n");
+				x = 0;
+				y ++;
+			} else if (c & 128) {
+				M[y][x].disp = malloc(sizeof(char) * 4);
+				M[y][x].disp[0] = c;
+				M[y][x].disp[1] = fgetc(F);
+				M[y][x].disp[2] = fgetc(F);
+				M[y][x].disp[3] = '\0';
+				printf("%s", M[y][x].disp);
+			} else {
+				M[y][x].disp = malloc(sizeof(char) * 2);
+				M[y][x].disp[0] = c;
+				M[y][x].disp[1] = '\0';
+				printf("%s", M[y][x].disp);
+			}
+		}
+		printf("\n");
+		return NULL;
+	}
 }
 
 int main(int argc, char **argv) {
-	ChargerEncodage("data/special_chars_encoding");
+	// ChargerEncodage("data/special_chars_encoding");
+	LoadMap("data/map_rendu");
 	return 0;
 }
 
