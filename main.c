@@ -80,15 +80,51 @@ map *LoadMap(map *M, char *fichier, char *fichiercouleur){
 	return M;
 }
 
+car* NewCar(char* fichier, int posx, int posy, char direction) {
+	FILE *F = fopen(fichier,"r");
+	if (F == NULL) {
+		printf(">>%s not found\n", fichier);
+		return NULL;
+	} else {
+		car *C = malloc(sizeof(car));
+		C->x = posx;
+		C->y = posy;
+		C->direction = 2;
+		C->image = malloc(sizeof(char*) * 2); //["🚘","🚗"]
+		for(int i = 0; i < 2; i++){
+			C->image[i] = calloc(5 ,sizeof(char));
+		}
+		int j;
+		for(int i = 0; i < 2; i++) {
+			j = 0;
+			for(char c = fgetc(F); c != '\n' && c!= EOF && j < 4; c = fgetc(F), j++){
+				C->image[i][j] = c;
+			}
+		}
+		fclose(F);
+		return C;
+	}
+}
+
+void PrintCar(car *C){
+	printf("\033[%d;%dH  ", C->y, C->x);
+	printf("\033[%d;%dH%s", C->y, C->x, C->image[C->direction%2]);
+}
+
+void EraseCar(car *C, map M){
+	printf("\033[%d;%dH%s%s%s%s", C->y, C->x, M.map[C->y][C->x].color, M.map[C->y][C->x].disp, M.map[C->y+1][C->x].color, M.map[C->y+1][C->x].disp);//C.image[C.direction%2]);
+}
+
 int main(int argc, char **argv) {
-	// ChargerEncodage("data/special_chars_encoding");
 	map M ;
 	LoadMap(&M, "data/map_rendu","data/map_color");
 	printf("Mx = %d\nMy = %d\n", M.x, M.y);
-
+	printf("\033[2J\033[1;1H");
 	AffMap(M);
-	printf("%s\n", COLOR.RES);
+	car *C = NewCar("data/car", 40, 0, SOUTH);
+	PrintCar(C);
+	sleep(1);
+	EraseCar(C,M);
+	printf("%s\033[31;1H", COLOR.RES);
 	return 0;
 }
-
-//devoirs: Ticy: charger towncode dans un tableau 2D de caracteres et l'afficher (1 fonction LoadMap)

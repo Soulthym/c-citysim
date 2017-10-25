@@ -4,7 +4,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "lib/libs.h"
+
+#define NORTH 0
+#define SOUTH 1
+#define EAST  2
+#define WEST  3
 
 struct color{
 	char *FBLA;
@@ -36,6 +42,7 @@ extern const struct color COLOR;
 typedef struct {
 	char *disp;
 	char *color;
+	int prop;
 }mape;
 
 typedef struct {
@@ -43,5 +50,13 @@ typedef struct {
 	int x;
 	int y;
 }map;
+
+typedef struct{
+	int x;
+	int y;
+	char direction;
+	char *color;
+	char **image;
+}car;
 
 #endif

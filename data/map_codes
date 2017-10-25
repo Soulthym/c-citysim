@@ -13,7 +13,6 @@
 4096	: train S
 8192	: cache
 
-
 pieton E + voiture N = 2 + 16 = 18 // bx 0001_0010
 
 struct case {
