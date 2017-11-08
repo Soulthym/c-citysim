@@ -2,16 +2,21 @@
 2		: pieton E
 4		: pieton S
 8		: pieton W
-16		: voiture N
+
+16		: voiture N // divises par 16
 32		: voiture E
 64		: voiture S
 128		: voiture W
-256		: feu voiture
-512		: ceder voiture
-1024	: parking
-2048	: train N
-4096	: train S
-8192	: cache
+
+256		: train N
+512		: train E
+1024	: train S
+2048	: train W
+
+4096	: feu voiture
+8192	: ceder voiture
+16384	: parking
+32768	: cache
 
 pieton E + voiture N = 2 + 16 = 18 // bx 0001_0010
 
@@ -21,3 +26,29 @@ struct case {
 
 case C[13][20]
 C[5]->color == C[5][0].color
+
+on separe par fichier :
+
+pieton_carac
+1	: pieton N
+2	: pieton E
+4	: pieton S
+8	: pieton W
+
+voiture_carac
+1	: voiture N 
+2	: voiture E
+4	: voiture S
+8	: voiture W
+
+train_carac
+1	: train N
+2	: train E
+4	: train S
+8	: train W
+
+map_carac
+1	: feu voiture
+2	: ceder voiture
+4	: parking
+8	: cache
