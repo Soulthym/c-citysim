@@ -1,5 +1,5 @@
-ALL: EXE LANCEMENT RM
-DEBUG: EXE LANCEMENTVAL RM
+ALL: EXE RM LANCEMENT
+DEBUG: EXE RM LANCEMENTVAL
 
 libs.o: lib/libs.c lib/libs.h
 	gcc -Wall -o libs.o -c lib/libs.c -g -lm

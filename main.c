@@ -3,10 +3,19 @@
 const struct color COLOR = {
     .FBLA =	"\x1b[30m",	.FRED =	"\x1b[31m",	.FGRE =	"\x1b[32m",	.FYEL =	"\x1b[33m",	.FBLU =	"\x1b[34m",	.FMAG =	"\x1b[35m",	.FCYA =	"\x1b[36m",	.FWHI =	"\x1b[37m",	.BBLA =	"\x1b[40m",	.BRED =	"\x1b[41m",	.BGRE =	"\x1b[42m",	.BYEL =	"\x1b[43m",	.BBLU =	"\x1b[44m",	.BMAG =	"\x1b[45m",	.BCYA =	"\x1b[46m",	.BWHI =	"\x1b[47m",	.RES = 	"\x1b[0m",	.BOL = 	"\x1b[1m",	.BLI = 	"\x1b[5m",	.REV = 	"\x1b[7m",	.CON = 	"\x1b[8m"};
 
+void Pause() {
+	getchar();
+}
+
+void AffMapElement(map M, int y, int x) {
+	printf("\033[%d;%dH%s%s", y+1, x+1, M.map[y][x].color, M.map[y][x].disp);
+}
+
 void AffMap(map M) {
 	for (int y = 0; y < M.y; y ++) {
 		for (int x = 0; x < M.x; x++) {
-			printf("%s%s", M.map[y][x].color, M.map[y][x].disp);
+			// printf("%s%s", M.map[y][x].color, M.map[y][x].disp);
+			AffMapElement(M, y, x);
 		}
 		printf("\n");
 	}
@@ -112,7 +121,8 @@ void PrintCar(car *C){
 }
 
 void EraseCar(car *C, map M){
-	printf("\033[%d;%dH%s%s%s%s", C->y, C->x, M.map[C->y][C->x].color, M.map[C->y][C->x].disp, M.map[C->y+1][C->x].color, M.map[C->y+1][C->x].disp);//C.image[C.direction%2]);
+	AffMapElement(M, C->y, C->x-1);
+	AffMapElement(M, C->y, C->x);
 }
 
 int main(int argc, char **argv) {
@@ -123,8 +133,9 @@ int main(int argc, char **argv) {
 	AffMap(M);
 	car *C = NewCar("data/car", 40, 0, SOUTH);
 	PrintCar(C);
-	sleep(1);
-	EraseCar(C,M);
-	printf("%s\033[31;1H", COLOR.RES);
+	// sleep(1);
+	Pause();
+	EraseCar(C, M);
+	printf("\033[31;1H%s", COLOR.RES);
 	return 0;
 }
