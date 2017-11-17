@@ -29,33 +29,60 @@ void AffMap(map M) {
 	}
 }
 
-map *LoadMap(map *M, char *fichier, char *fichiercouleur){
-	FILE *F = fopen(fichier, "r");
-	FILE *FC = fopen(fichiercouleur, "r");
-	if (F == NULL) {
-		printf(">>%s not found\n", fichier);
+map *LoadMap(map *M, char *fmap, char *fcolor, char *fppiet, char *fpvoit, char *fptrain, char *fpmap){
+	FILE *FM = fopen(fmap, "r");
+	FILE *FC = fopen(fcolor, "r");
+	FILE *FPP = fopen(fppiet, "r");
+	FILE *FPV = fopen(fpvoit, "r");
+	FILE *FPT = fopen(fptrain, "r");
+	FILE *FPM = fopen(fpmap, "r");
+	
+	if (FM == NULL) {
+		printf(">>%s not found\n", fmap);
 	} else if (FC == NULL){
-		fclose(F);
-		printf(">>%s not found\n", fichiercouleur);
+		fclose(FM);
+		printf(">>%s not found\n", fcolor);
+	} else if (FPP == NULL){
+		fclose(FM);
+		fclose(FC);
+		printf(">>%s not found\n", fppiet);
+	} else if (FPV == NULL){
+		fclose(FM);
+		fclose(FC);
+		fclose(FPP);
+		printf(">>%s not found\n", fpvoit);
+	} else if (FPT == NULL){
+		fclose(FM);
+		fclose(FC);
+		fclose(FPP);
+		fclose(FPV);
+		printf(">>%s not found\n", fptrain);
+	} else if (FPM == NULL){
+		fclose(FM);
+		fclose(FC);
+		fclose(FPP);
+		fclose(FPV);
+		fclose(FPT);
+		printf(">>%s not found\n", fpmap);
 	} else {
-		fscanf(F,"%d %d\n", &M->x, &M->y);
+		fscanf(FM,"%d %d\n", &M->x, &M->y);
 		M->map = malloc(sizeof(mape*) * M->y);
 		for (int y = 0; y < M->y; y++) {
 			M->map[y] = malloc(sizeof(mape) * M->x);
 		}
-		printf(">>loading %s\n", fichier);
-		char c,cc;
+//FM,FC,FPP,FPV,FPT,FPM
+		char cm,cc,cpp,cpv,cpt,cpm;
 		for (int y = 0; y < M->y; y++) {
 			for (int x = 0; x < M->x; x++) {
 				M->map[y][x].disp = malloc(sizeof(char) * 4);
-				c = fgetc(F);
+				cm = fgetc(FM);
 				cc = fgetc(FC);
-				M->map[y][x].disp[0] = c;
-				if (!(c & 128)) {
+				M->map[y][x].disp[0] = cm;
+				if (!(cm & 128)) {
 					M->map[y][x].disp[1] = '\0';
 				} else {
-					M->map[y][x].disp[1] = fgetc(F);
-					M->map[y][x].disp[2] = fgetc(F);
+					M->map[y][x].disp[1] = fgetc(FM);
+					M->map[y][x].disp[2] = fgetc(FM);
 					M->map[y][x].disp[3] = '\0';
 				}
 				switch (cc) {
@@ -88,19 +115,27 @@ map *LoadMap(map *M, char *fichier, char *fichiercouleur){
 						break;
 				}
 			}
+			fgetc(FM);
 			fgetc(FC);
-			fgetc(F);
+			fgetc(FPP);
+			fgetc(FPV);
+			fgetc(FPT);
+			//fgetc(FPM);			
 		}
-		fclose(F);
+		fclose(FM);
 		fclose(FC);
+		fclose(FPP);
+		fclose(FPV);
+		fclose(FPT);
+		fclose(FPM);
 	}
 	return M;
 }
 
-car* NewCar(char* fichier, int posx, int posy, char direction) {
-	FILE *F = fopen(fichier,"r");
+car* NewCar(char* f, int posx, int posy, char direction) {
+	FILE *F = fopen(f,"r");
 	if (F == NULL) {
-		printf(">>%s not found\n", fichier);
+		printf(">>%s not found\n", f);
 		return NULL;
 	} else {
 		car *C = malloc(sizeof(car));
@@ -135,14 +170,14 @@ void EraseCar(car *C, map M){
 
 int main(int argc, char **argv) {
 	map M ;
-	LoadMap(&M, "data/map_rendu","data/map_color");
+	LoadMap(&M, "data/map_rendu","data/map_color","data/pieton_carac","data/voiture_carac","data/train_carac","data/map_carac");
 	printf("Mx = %d\nMy = %d\n", M.x, M.y);
 	printf("\033[2J\033[1;1H");
 	AffMap(M);
 	car *C = NewCar("data/car", 40, 0, SOUTH);
-	PrintCar(C);
-	Pause();
-	EraseCar(C, M);
+	// PrintCar(C);
+	// Pause();
+	// EraseCar(C, M);
 	printf("\033[31;1H%s", COLOR.RES);
 	return 0;
 }
