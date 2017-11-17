@@ -1,5 +1,5 @@
-ALL: EXE RM LANCEMENT
-DEBUG: EXE RM LANCEMENTVAL
+ALL: EXE RM LANCEMENT CLEAN
+DEBUG: EXE RM LANCEMENTVAL CLEAN
 
 libs.o: lib/libs.c lib/libs.h
 	gcc -Wall -o libs.o -c lib/libs.c -g -lm
@@ -19,5 +19,7 @@ LANCEMENTVAL:
 RM:
 	rm *.o
 
+CLEAN:
+	rm EXE
 #NB: when using valgrind to debug: use it on ./EXE not make (rm causes a leak)
 
