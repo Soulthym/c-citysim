@@ -1,4 +1,3 @@
-# c-datastruct
-all my c structures and associated functions
+# c-citysim
 
-they use namespaces as such LIBRARY.func(), always use namespaces with caps and the corresponding types in lowercase
+a simulation in the terminal, of a small town with its interactions, including walkers, trains and cars.
