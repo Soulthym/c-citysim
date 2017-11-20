@@ -7,10 +7,16 @@
 #include <unistd.h>
 #include "lib/libs.h"
 
-#define NORTH 0
-#define SOUTH 1
+#define INORTH 0
+#define IEAST  1
+#define ISOUTH 2
+#define IWEST  3
+#define NORTH 1
 #define EAST  2
-#define WEST  3
+#define SOUTH 4
+#define WEST  8
+
+#define cango(dir, a) a & dir
 
 struct color{
 	char *FBLA;
@@ -42,7 +48,9 @@ extern const struct color COLOR;
 typedef struct {
 	char *disp;
 	char *color;
-	int prop;
+	char walkerProp;
+	char carProp;
+	char trainProp;
 }mape;
 
 typedef struct {

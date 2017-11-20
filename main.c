@@ -1,10 +1,12 @@
 #include "main.h"
-//comment
 const struct color COLOR = {
     .FBLA =	"\x1b[30m",	.FRED =	"\x1b[31m",	.FGRE =	"\x1b[32m",	.FYEL =	"\x1b[33m",	.FBLU =	"\x1b[34m",	.FMAG =	"\x1b[35m",	.FCYA =	"\x1b[36m",	.FWHI =	"\x1b[37m",	.BBLA =	"\x1b[40m",	.BRED =	"\x1b[41m",	.BGRE =	"\x1b[42m",	.BYEL =	"\x1b[43m",	.BBLU =	"\x1b[44m",	.BMAG =	"\x1b[45m",	.BCYA =	"\x1b[46m",	.BWHI =	"\x1b[47m",	.RES = 	"\x1b[0m",	.BOL = 	"\x1b[1m",	.BLI = 	"\x1b[5m",	.REV = 	"\x1b[7m",	.CON = 	"\x1b[8m"};
 
 int hextoi(char c) {
-	if (c <= '9' && c >= '0') {
+  if (c == '.') {
+    return 0;
+  }
+	else if (c <= '9' && c >= '1') {
 		return (int) c-'0';
 	} else {
 		return (int) c-'A'+10;
@@ -15,14 +17,14 @@ void Pause() {
 	getchar();
 }
 
-void AffMapElement(map M, int y, int x) {
-	printf("\033[%d;%dH%s%s", y+1, x+1, M.map[y][x].color, M.map[y][x].disp);
+void AffMapElement(map *M, int y, int x) {
+	printf("\033[%d;%dH%s%s", y+1, x+1, M->map[y][x].color, M->map[y][x].disp);
 }
 
-void AffMap(map M) {
-	for (int y = 0; y < M.y; y ++) {
-		for (int x = 0; x < M.x; x++) {
-			// printf("%s%s", M.map[y][x].color, M.map[y][x].disp);
+void AffMap(map *M) {
+  printf("\033[2J\033[1;1H");
+	for (int y = 0; y < M->y; y ++) {
+		for (int x = 0; x < M->x; x++) {
 			AffMapElement(M, y, x);
 		}
 		printf("\n");
@@ -36,7 +38,6 @@ map *LoadMap(map *M, char *fmap, char *fcolor, char *fppiet, char *fpvoit, char 
 	FILE *FPV = fopen(fpvoit, "r");
 	FILE *FPT = fopen(fptrain, "r");
 	FILE *FPM = fopen(fpmap, "r");
-	
 	if (FM == NULL) {
 		printf(">>%s not found\n", fmap);
 	} else if (FC == NULL){
@@ -70,13 +71,19 @@ map *LoadMap(map *M, char *fmap, char *fcolor, char *fppiet, char *fpvoit, char 
 		for (int y = 0; y < M->y; y++) {
 			M->map[y] = malloc(sizeof(mape) * M->x);
 		}
-//FM,FC,FPP,FPV,FPT,FPM
+    //FM,FC,FPP,FPV,FPT,FPM
 		char cm,cc,cpp,cpv,cpt,cpm;
 		for (int y = 0; y < M->y; y++) {
 			for (int x = 0; x < M->x; x++) {
 				M->map[y][x].disp = malloc(sizeof(char) * 4);
 				cm = fgetc(FM);
 				cc = fgetc(FC);
+        cpp = fgetc(FPP);
+        cpv = fgetc(FPV);
+        cpt = fgetc(FPT);
+        M->map[y][x].walkerProp = hextoi(cpp);
+        M->map[y][x].carProp = hextoi(cpv);
+        M->map[y][x].trainProp = hextoi(cpt);
 				M->map[y][x].disp[0] = cm;
 				if (!(cm & 128)) {
 					M->map[y][x].disp[1] = '\0';
@@ -120,7 +127,7 @@ map *LoadMap(map *M, char *fmap, char *fcolor, char *fppiet, char *fpvoit, char 
 			fgetc(FPP);
 			fgetc(FPV);
 			fgetc(FPT);
-			//fgetc(FPM);			
+			//fgetc(FPM);
 		}
 		fclose(FM);
 		fclose(FC);
@@ -132,7 +139,7 @@ map *LoadMap(map *M, char *fmap, char *fcolor, char *fppiet, char *fpvoit, char 
 	return M;
 }
 
-car* NewCar(char* f, int posx, int posy, char direction) {
+car* NewCar(char* f, int posx, int posy, char direction, char* color) {
 	FILE *F = fopen(f,"r");
 	if (F == NULL) {
 		printf(">>%s not found\n", f);
@@ -153,31 +160,92 @@ car* NewCar(char* f, int posx, int posy, char direction) {
 				C->image[i][j] = c;
 			}
 		}
+    C->color = color;
 		fclose(F);
 		return C;
 	}
 }
 
-void PrintCar(car *C){
-	printf("\033[%d;%dH  ", C->y, C->x);
-	printf("\033[%d;%dH%s", C->y, C->x, C->image[C->direction%2]);
+void RemoveCar(car *C) {
+  free(C);
+  C = NULL;
 }
 
-void EraseCar(car *C, map M){
+void PrintCar(car *C){
+  if (C){
+  	printf("\033[%d;%dH%s%s", C->y+1, C->x+1, C->color, C->image[C->direction%2]);
+  }
+}
+
+void EraseCar(car *C, map *M){
 	AffMapElement(M, C->y, C->x-1);
 	AffMapElement(M, C->y, C->x);
 }
 
+void PrintAllCars(car **C, int size) {
+  for (size_t i = 0; i < size; i++) {
+    PrintCar(C[i]);
+  }
+}
+
+void DeleteOutsideOfMapCars(map *M, car **C, int size) {
+  for (size_t i = 0; i < size; i++) {
+    if (C[i] != NULL) {
+      if (C[i]->x >= M->x || C[i]->x < 0) {
+        RemoveCar(C[i]);
+        C[i] = NULL;
+      } else if (C[i]->y >= M->y || C[i]->y < 0) {
+        RemoveCar(C[i]);
+        C[i] = NULL;
+      }
+    }
+  }
+}
+
+void MoveCar(car *C, map *M){
+  char dir[4] = {1,2,4,8};
+  int found = 0;
+  switch (cango(C->direction, M->map[C->y][C->x].carProp)) {
+    case NORTH:
+      C->y--;
+      break;
+    case SOUTH:
+      C->y++;
+      break;
+    case EAST:
+      C->x++;
+      break;
+    case WEST:
+      C->x--;
+    default:
+      for (size_t i = 0; i < 4; i++) {
+        if(cango(dir[i], M->map[C->y][C->x].carProp)) {
+          C->direction = dir[i];
+          found = 1;
+          break;
+        }
+      }
+      if (!(found)) {
+        EraseCar(C,M);
+      }
+  }
+}
+
 int main(int argc, char **argv) {
-	map M ;
+	map M;
 	LoadMap(&M, "data/map_rendu","data/map_color","data/pieton_carac","data/voiture_carac","data/train_carac","data/map_carac");
-	printf("Mx = %d\nMy = %d\n", M.x, M.y);
-	printf("\033[2J\033[1;1H");
-	AffMap(M);
-	car *C = NewCar("data/car", 40, 0, SOUTH);
-	// PrintCar(C);
-	// Pause();
-	// EraseCar(C, M);
-	printf("\033[31;1H%s", COLOR.RES);
+	AffMap(&M);
+  car *C[50] = {NULL};
+  C[0] =  NewCar("data/car", 10, 0, SOUTH,COLOR.FRED);
+  PrintCar(C[0]);
+  Pause();
+  EraseCar(C[0],&M);
+  printf("\033[31;1H%s", COLOR.RES);
+  for (size_t i = 0; i < 50; i++) {
+    printf("%s%p ", COLOR.RES ,C[i]);
+  }
+  // MoveCar(C[0],&M);
+  // DeleteOutsideOfMapCars(&M,C[0],50);
+  // PrintCar(C[0]);
 	return 0;
 }
