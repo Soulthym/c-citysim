@@ -197,46 +197,46 @@ void DeleteOutsideOfMapCars(map *M, car **C, int size) {
   }
 }
 
-car *MoveCar(car **C, map *M, int dir){
-  if (*C != NULL) {
-    EraseCar(*C,M);
+car *MoveCar(car *C, map *M, int dir){
+  if (C != NULL) {
+    EraseCar(C,M);
     switch(dir) {
       case 1:
-        (*C)->y--;
+        C->y--;
         break;
       case 2:
-        (*C)->x++;
+        C->x++;
         break;
       case 4:
-        (*C)->y++;
+        C->y++;
         break;
       case 8:
-        (*C)->x--;
+        C->x--;
         break;
     }
-    if ((*C)->x > M->x || (*C)->x < 0 || (*C)->y >= M->y || (*C)->y < 0) {
-      free(*C);
-      *C = NULL;
+    if (C->x > M->x-2 || C->x < 0 || C->y > M->y-1 || C->y < 0) {
+      free(C);
+      C = NULL;
     } else {
-      PrintCar(*C);
+      PrintCar(C);
     }
   }
-  return *C;
+  return C;
 }
 
 car *UpdateCar(car *C, map *M){
-  if (!(cango(C->direction, M->map[C->y][C->x].carProp))){
-    char dir[4] = {NORTH, EAST, SOUTH, WEST};
-    int i;
-    while(1){
-      i = rand()%4;
-      if (cango(dir[i],M->map[C->y][C->x].carProp)){
-        break;
-      }
+  // if (!(cango(C->direction, M->map[C->y][C->x].carProp))){
+  char dir[4] = {NORTH, EAST, SOUTH, WEST};
+  int i;
+  while(1){
+    i = rand()%4;
+    if (cango(dir[i],M->map[C->y][C->x].carProp)){
+      break;
     }
-    C->direction = dir[i];
   }
-  return MoveCar(&C,M,C->direction);
+  C->direction = dir[i];
+  C = MoveCar(C,M,C->direction);
+  return C;
 }
 
 void printCarTab(car **C, int size) {
@@ -251,20 +251,56 @@ void printCarTab(car **C, int size) {
   printf("\033[1D]\n");
 }
 
+void UpdateAllCars(car **C, int size, map* M) {
+  for (int i = 0; i < size; i++) {
+    if (C[i] != NULL) {
+      C[i] = UpdateCar(C[i], M);
+    }
+  }
+}
+
+car *AddCar(car **C, int y, int x, int size) {
+  char *colors[8]= {COLOR.FBLA, COLOR.FRED, COLOR.FGRE, COLOR.FYEL, COLOR.FBLU, COLOR.FMAG, COLOR.FCYA, COLOR.FWHI};
+  char dir[4] = {NORTH, EAST, SOUTH, WEST};
+  for (int i = 0; i < size; i++) {
+    if (C[i] == NULL) {
+      C[i] = NewCar("data/car", y, x, dir[rand()%4], colors[rand()%4]);
+      PrintCar(C[i]);
+      return C[i];
+    }
+  }
+  return NULL;
+}
+
 int main(int argc, char **argv) {
 	map M;
   srand(10);//time(NULL));
 	LoadMap(&M, "data/map_rendu","data/map_color","data/pieton_carac","data/voiture_carac","data/train_carac","data/map_carac");
 	AffMap(&M);
-  car *C[50] = {NULL};
-  C[0] =  NewCar("data/car", 54, 0, SOUTH,COLOR.FRED);
-  PrintCar(C[0]);
-  printCarTab(C,50);
-  while(UpdateCar(C[0],&M)){
-    usleep(150000);
-    printCarTab(C,50);
+  car *C[NUMBEROFCARS] = {NULL};
+  // C[0] = NewCar("data/car", 54, 0, SOUTH,COLOR.FGRE);
+  // PrintCar(C[0]);
+  //
+  // UpdateCar(C[0], &M);
+  AddCar(C, 54, 0, NUMBEROFCARS);
+  int time = 0;
+  while (1) {
+    if (!(++time%4)) {
+      if (!(rand()%2)) AddCar(C, 54, 0, NUMBEROFCARS);
+      if (!(rand()%3)) AddCar(C, 25, 29, NUMBEROFCARS);
+    } else if (!((time+2)%4)) {
+      if (!(rand()%2)) AddCar(C, 107, 15, NUMBEROFCARS);
+    } else if (!((time+3)%4)) {
+      if (!(rand()%3)) AddCar(C, 0, 17, NUMBEROFCARS);
+    }
+    UpdateAllCars(C, NUMBEROFCARS, &M);
+    usleep(50000);
+    printCarTab(C,NUMBEROFCARS);
   }
+  // while(1) {
+  //   UpdateAllCars(C, 50, &M);
+  //   usleep(150000);
+  // }
   printf("\033[36;1H%s", COLOR.RES);
 	return 0;
 }
-// EraseCar(C[0],&M);
