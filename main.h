@@ -5,12 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
 #include "lib/libs.h"
 
-#define INORTH 0
-#define IEAST  1
-#define ISOUTH 2
-#define IWEST  3
 #define NORTH 1
 #define EAST  2
 #define SOUTH 4
