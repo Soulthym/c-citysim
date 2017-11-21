@@ -274,33 +274,30 @@ car *AddCar(car **C, int y, int x, int size) {
 
 int main(int argc, char **argv) {
 	map M;
-  srand(10);//time(NULL));
+	srand(10);//time(NULL));
 	LoadMap(&M, "data/map_rendu","data/map_color","data/pieton_carac","data/voiture_carac","data/train_carac","data/map_carac");
 	AffMap(&M);
-  car *C[NUMBEROFCARS] = {NULL};
-  // C[0] = NewCar("data/car", 54, 0, SOUTH,COLOR.FGRE);
-  // PrintCar(C[0]);
-  //
-  // UpdateCar(C[0], &M);
-  AddCar(C, 54, 0, NUMBEROFCARS);
-  int time = 0;
-  while (1) {
-    if (!(++time%4)) {
-      if (!(rand()%2)) AddCar(C, 54, 0, NUMBEROFCARS);
-      if (!(rand()%3)) AddCar(C, 25, 29, NUMBEROFCARS);
-    } else if (!((time+2)%4)) {
-      if (!(rand()%2)) AddCar(C, 107, 15, NUMBEROFCARS);
-    } else if (!((time+3)%4)) {
-      if (!(rand()%3)) AddCar(C, 0, 17, NUMBEROFCARS);
-    }
-    UpdateAllCars(C, NUMBEROFCARS, &M);
-    usleep(50000);
-    printCarTab(C,NUMBEROFCARS);
-  }
-  // while(1) {
-  //   UpdateAllCars(C, 50, &M);
-  //   usleep(150000);
-  // }
-  printf("\033[36;1H%s", COLOR.RES);
+	car *C[NUMBEROFCARS] = {NULL};
+	AddCar(C, 54, 0, NUMBEROFCARS);
+	int time = 0;
+	while (1) {
+		//if (!(++time%4)) {
+		//	if (!(rand()%2)) AddCar(C, 54, 0, NUMBEROFCARS);
+		//	if (!(rand()%3)) AddCar(C, 25, 29, NUMBEROFCARS);
+		//}/else if (!((time+2)%4)) {
+		//	if (!(rand()%2)) AddCar(C, 107, 15, NUMBEROFCARS);
+		//} else if (!((time+3)%4)) {
+		//	if (!(rand()%3)) AddCar(C, 0, 17, NUMBEROFCARS);
+		//}
+
+		AddCar(C, 107, 15, NUMBEROFCARS);
+		AddCar(C, 54, 0, NUMBEROFCARS);
+		AddCar(C, 0, 17, NUMBEROFCARS);
+		AddCar(C, 25, 29, NUMBEROFCARS);
+		UpdateAllCars(C, NUMBEROFCARS, &M);
+		usleep(150000);
+		//printCarTab(C,NUMBEROFCARS);
+	}
+	printf("\033[36;1H%s", COLOR.RES);
 	return 0;
 }
