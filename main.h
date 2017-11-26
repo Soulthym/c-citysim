@@ -8,7 +8,7 @@
 #include <time.h>
 #include "lib/libs.h"
 
-#define NUMBEROFCARS 200
+#define NUMBEROFCARS 60
 
 #define NORTH 1
 #define EAST  2
@@ -44,6 +44,12 @@ struct color{
 };
 extern const struct color COLOR;
 
+struct sprite{
+	char *car;
+	char *walker;
+};
+extern const struct sprite SPRITE;
+
 typedef struct {
 	char *disp;
 	char *color;
@@ -65,7 +71,7 @@ typedef struct{
 	int y;
 	char direction;
 	char *color;
-	char **image;
+	char *disp;
 }car;
 
 #endif
