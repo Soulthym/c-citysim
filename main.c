@@ -177,13 +177,13 @@ int main(int argc, char **argv) {
   map M;
   LoadMap(&M,"data/map_rendu","data/map_color","data/pieton_carac","data/voiture_carac","data/train_carac","data/map_carac");
   AffMap(&M);
-  // car *C[NUMBEROFCARS] = {NULL};
-  // for (size_t i = 0; i < 54; i++) {
-  //   C[i] = NewCar(i*2+1,0,0,COLOR.FRED);
-  //   PrintCars(C);
-  //   Pause();
-  //   EraseCars(C, &M);
-  // }
-  // printf("\033[36;1H%s", COLOR.RES);
+  car *C[NUMBEROFCARS] = {NULL};
+  for (size_t i = 0; i < 54; i++) {
+    C[i] = NewCar(i*2+1,0,0,COLOR.FRED);
+    PrintCars(C);
+    Pause();
+    EraseCars(C, &M);
+  }
+  printf("\033[36;1H%s", COLOR.RES);
 	return 0;
 }
