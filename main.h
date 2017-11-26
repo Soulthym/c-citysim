@@ -50,6 +50,8 @@ typedef struct {
 	char walkerProp;
 	char carProp;
 	char trainProp;
+	char mapProp;
+	char occupied;
 }mape;
 
 typedef struct {

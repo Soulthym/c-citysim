@@ -36,7 +36,7 @@ pieton_carac
 8	: pieton W
 
 voiture_carac
-1	: voiture N 
+1	: voiture N
 2	: voiture E
 4	: voiture S
 8	: voiture W
