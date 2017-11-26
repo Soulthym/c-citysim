@@ -8,14 +8,15 @@
 #include <time.h>
 #include "lib/libs.h"
 
-#define NUMBEROFCARS 60
+#define NUMBEROFCARS 50
 
 #define NORTH 1
 #define EAST  2
 #define SOUTH 4
 #define WEST  8
+#define HIDDEN 8
 
-#define cango(dir, a) a & dir
+#define hasprop(a, b) a & b
 
 struct color{
 	char *FBLA;
