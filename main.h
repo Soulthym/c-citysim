@@ -8,7 +8,7 @@
 #include <time.h>
 #include "lib/libs.h"
 
-#define NUMBEROFCARS 50
+#define NUMBEROFCARS 400
 
 #define NORTH 1
 #define EAST  2
