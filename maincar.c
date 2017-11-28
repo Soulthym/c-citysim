@@ -3,9 +3,9 @@ const struct color COLOR = {
   .FBLA =	"\x1b[30m",	.FRED =	"\x1b[31m",	.FGRE =	"\x1b[32m",	.FYEL =	"\x1b[33m",	.FBLU =	"\x1b[34m",	.FMAG =	"\x1b[35m",	.FCYA =	"\x1b[36m",	.FWHI =	"\x1b[37m",	.BBLA =	"\x1b[40m",	.BRED =	"\x1b[41m",	.BGRE =	"\x1b[42m",	.BYEL =	"\x1b[43m",	.BBLU =	"\x1b[44m",	.BMAG =	"\x1b[45m",	.BCYA =	"\x1b[46m",	.BWHI =	"\x1b[47m",	.RES = 	"\x1b[0m",	.BOL = 	"\x1b[1m",	.BLI = 	"\x1b[5m",	.REV = 	"\x1b[7m",	.CON = 	"\x1b[8m"
 };
 const struct sprite SPRITE = {
-  .walker = "🚘", .walker = "00"
+  .car = "🚘", .walker = "0"
 };
-int  hextoi(char c) {
+int hextoi(char c) {
   if (c == '.') {
     return 0;
   }
@@ -38,7 +38,7 @@ void AffMap(map *M) {
 		printf("\n");
 	}
 }
-map  *LoadMap(map *M, char *fmap, char *fcolor, char *fppiet, char *fpvoit, char *fptrain, char *fpmap){
+map *LoadMap(map *M, char *fmap, char *fcolor, char *fppiet, char *fpvoit, char *fptrain, char *fpmap){
 	FILE *FM = fopen(fmap, "r");
 	FILE *FC = fopen(fcolor, "r");
 	FILE *FPP = fopen(fppiet, "r");
@@ -164,81 +164,73 @@ void freemap(map* M) {
   free(M->map);
 }
 
-walker* NewWalker(int posx, int posy, char direction, char* color) {
-	walker *W = malloc(sizeof(walker));
-	W->x = posx;
-	W->y = posy;
-	W->direction = direction;
-	W->disp = SPRITE.walker; //["🚘","🚗"]
-  W->color = color;
-	return W;
+car* NewCar(int posx, int posy, char direction, char* color) {
+	car *C = malloc(sizeof(car));
+	C->x = posx;
+	C->y = posy;
+	C->direction = direction;
+	C->disp = SPRITE.car; //["🚘","🚗"]
+  C->color = color;
+	return C;
 }
-void RemoveWalker(walker **W, map *M) {
-  if (*W) {
-    free(*W);
-    *W = NULL;
+void RemoveCar(car **C, map *M) {
+  if (*C) {
+    // OccupyCar(M,C->x,C->y,0);
+    free(*C);
+    *C = NULL;
   }
 }
-int  WalkerIsAt(walker* W, int x, int y) {
-  if (W) {
-    if (W->x == x && W->y == y){
-      // printf("\033[37;1H%sFound Walker!", COLOR.RES);
-      return 1;
-    }
-  }
-  return 0;
-}
-void RemoveWalkersAt(walker **W, int x, int y,map *M) {
-  for (size_t i = 0; i < NUMBEROFWALKERS; i++) {
-    if (WalkerIsAt(W[i],x,y)) {
-      RemoveWalker(&W[i],M);
+void RemoveCarsAt(car **C, int x, int y,map *M) {
+  for (size_t i = 0; i < NUMBEROFCARS; i++) {
+    if (CarIsAt(C[i],x,y)) {
+      RemoveCar(&C[i],M);
     }
   }
 }
-void RemoveWalkers(walker **W,map *M) {
-  for (size_t i = 0; i < NUMBEROFWALKERS; i++) {
-    RemoveWalker(&W[i],M);
+void RemoveCars(car **C,map *M) {
+  for (size_t i = 0; i < NUMBEROFCARS; i++) {
+    RemoveCar(&C[i],M);
   }
 }
-void PrintWalker(walker *W, map *M) {
-  if (W){
-    if (W->y < M->y && W->y >= 0 && W->x < M->x && W->x >= 0)  {
-      if (!(hasprop(M->map[W->y][W->x].mapProp,HIDDEN))) {
-        printf("\033[%d;%dH  \033[%d;%dH%s%s",W->y+1, W->x+1, W->y+1, W->x+1,W->color, W->disp);
+void PrintCar(car *C, map *M) {
+  if (C){
+    if (C->y < M->y && C->y >= 0 && C->x < M->x && C->x >= 0)  {
+      if (!(hasprop(M->map[C->y][C->x].mapProp,HIDDEN))) {
+        printf("\033[%d;%dH  \033[%d;%dH%s%s",C->y+1, C->x+1, C->y+1, C->x+1,C->color, C->disp);
       }
     }
   }
 }
-void PrintWalkers(walker **W, map *M){
-  for (size_t i = 0; i < NUMBEROFWALKERS; i++) {
-    if (W[i] != NULL) {
-      PrintWalker(W[i],M);
+void PrintCars(car **C, map *M){
+  for (size_t i = 0; i < NUMBEROFCARS; i++) {
+    if (C[i] != NULL) {
+      PrintCar(C[i],M);
     }
   }
 }
-void PrintWalkerTab(walker **W) {
+void PrintCarTab(car **C) {
   printf("\033[33;1H%s[", COLOR.RES);
-  for (int i = 0; i < NUMBEROFWALKERS; i++) {
-    if(W[i]) {
-      printf("%d,",W[i]->direction);
+  for (int i = 0; i < NUMBEROFCARS; i++) {
+    if(C[i]) {
+      printf("%d,",C[i]->direction);
     } else {
       printf("%d,",0);
     }
   }
   printf("\033[1D]\n");
 }
-void EraseWalker(walker *W, map* M) {
-  AffMapElement(M,W->y,W->x);
-  AffMapElement(M,W->y,W->x+1);
+void EraseCar(car *C, map* M) {
+  AffMapElement(M,C->y,C->x);
+  AffMapElement(M,C->y,C->x+1);
 }
-void EraseWalkers(walker **W, map* M) {
-  for (size_t i = 0; i < NUMBEROFWALKERS; i++) {
-    if (W[i]) {
-      EraseWalker(W[i],M);
+void EraseCars(car **C, map* M) {
+  for (size_t i = 0; i < NUMBEROFCARS; i++) {
+    if (C[i]) {
+      EraseCar(C[i],M);
     }
   }
 }
-void OccupyWalker(map *M, int x, int y, int occupy){
+void OccupyCar(map *M, int x, int y, int occupy){
   if (y < M->y && y >= 0 && x < M->x && x >= 0) {
     M->map[y][x].occupied = occupy;
     if (x+1 < M->x){
@@ -246,188 +238,139 @@ void OccupyWalker(map *M, int x, int y, int occupy){
     }
   }
 }
-int  isOccupied(map* M, int x, int y) {
+int isOccupied(map* M, int x, int y) {
   if (y < M->y && y >= 0 && x < M->x && x >= 0) {
     return M->map[y][x].occupied;
   }
     return 0;
 }
-void AddWalker(walker **W, int x, int y, char dir, map *M) {
+void AddCar(car **C, int x, int y, char dir, map *M) {
   char *Colors[8] = {COLOR.FBLA,COLOR.FRED,COLOR.FGRE,COLOR.FYEL,COLOR.FBLU,COLOR.FMAG,COLOR.FCYA,COLOR.FWHI};
-  for(size_t i = 0; i < NUMBEROFWALKERS; i++) {
-    if (!(W[i])) {
+  for(size_t i = 0; i < NUMBEROFCARS; i++) {
+    if (!(C[i])) {
       if(!(isOccupied(M,x,y))) {
-        W[i] = NewWalker(x,y,dir,Colors[rand()%8]);
-        OccupyWalker(M,x,y,1);
-        // printf("\033[36;1H%s>>New walker added @ %p", COLOR.RES,W[i]);
+        C[i] = NewCar(x,y,dir,Colors[rand()%8]);
+        OccupyCar(M,x,y,1);
+        // printf("\033[36;1H%s>>New car added @ %p", COLOR.RES,C[i]);
         return;
       }
     }
   }
 }
-void AddWalkers(walker **W, map *M, int timer) {
-  if (!(rand()%10)) {
-    AddWalker(W,8,0,SOUTH,M);
+void AddCars(car **C, map *M, int timer) {
+  if (!(rand()%1)) {
+    AddCar(C,54,0,SOUTH,M);
   }
-  if (!(rand()%10)) {
-    AddWalker(W,16,0,SOUTH,M);
+  if (!(rand()%1)) {
+    AddCar(C,25,29,NORTH,M);
   }
-  if (!(rand()%10)) {
-    AddWalker(W,26,0,SOUTH,M);
+  if (!(rand()%1)) {
+    AddCar(C,108,15,WEST,M);
   }
-  if (!(rand()%10)) {
-    AddWalker(W,51,0,SOUTH,M);
+  if (!(rand()%1)) {
+    AddCar(C,0,17,EAST,M);
   }
-  if (!(rand()%10)) {
-    AddWalker(W,59,0,SOUTH,M);
-  }
-  if (!(rand()%10)) {
-    AddWalker(W,66,0,SOUTH,M);
-  }
-  if (!(rand()%10)) {
-    AddWalker(W,85,0,SOUTH,M);
-  }
-  if (!(rand()%10)) {
-    AddWalker(W,106,0,SOUTH,M);
-  }
-  if (!(rand()%10)) {
-    AddWalker(W,108,13,SOUTH,M);
-  }
-  if (!(rand()%10)) {
-    AddWalker(W,0,19,SOUTH,M);
-  }
-  if (!(rand()%10)) {
-    AddWalker(W,0,26,SOUTH,M);
-  }
-  if (!(rand()%10)) {
-    AddWalker(W,21,29,SOUTH,M);
-  }
-  if (!(rand()%10)) {
-    AddWalker(W,29,29,SOUTH,M);
-  }
-  if (!(rand()%10)) {
-    AddWalker(W,108,20,SOUTH,M);
-  }
-  if (!(rand()%10)) {
-    AddWalker(W,93,29,SOUTH,M);
-  }
-  if (!(rand()%10)) {
-    AddWalker(W,72,29,SOUTH,M);
-  }
-  if (!(rand()%10)) {
-    AddWalker(W,80,29,SOUTH,M);
-  }
-
 }
-void MoveWalker(walker *W, map *M, char dir) {
-  if (W){
+int CarIsAt(car* C, int x, int y) {
+  if (C) {
+    if (C->x == x && C->y == y){
+      return 1;
+    }
+  }
+  return 0;
+}
+void MoveCar(car *C, map *M, char dir) {
+  if (C){
     switch (dir) {
       case NORTH:
-        OccupyWalker(M,W->x,W->y,0);
-          if (!(isOccupied(M,W->x,W->y-1))) {
-          W->y--;
+        OccupyCar(M,C->x,C->y,0);
+          if (!(isOccupied(M,C->x,C->y-1))) {
+          C->y--;
         }
-        OccupyWalker(M,W->x,W->y,1);
+        OccupyCar(M,C->x,C->y,1);
         break;
       case SOUTH:
-        OccupyWalker(M,W->x,W->y,0);
-        if (!(isOccupied(M,W->x,W->y+1))) {
-          W->y++;
+        OccupyCar(M,C->x,C->y,0);
+        if (!(isOccupied(M,C->x,C->y+1))) {
+          C->y++;
         }
-        OccupyWalker(M,W->x,W->y,1);
+        OccupyCar(M,C->x,C->y,1);
         break;
       case EAST:
-        OccupyWalker(M,W->x,W->y,0);
-        if (!(isOccupied(M,W->x+2,W->y))) {
-          W->x++;
+        OccupyCar(M,C->x,C->y,0);
+        if (!(isOccupied(M,C->x+2,C->y))) {
+          C->x++;
         }
-        OccupyWalker(M,W->x,W->y,1);
+        OccupyCar(M,C->x,C->y,1);
         break;
       case WEST:
-        OccupyWalker(M,W->x,W->y,0);
-        if (!(isOccupied(M,W->x-1,W->y))) {
-          W->x--;
+        OccupyCar(M,C->x,C->y,0);
+        if (!(isOccupied(M,C->x-1,C->y))) {
+          C->x--;
         }
-        OccupyWalker(M,W->x,W->y,1);
+        OccupyCar(M,C->x,C->y,1);
         break;
     }
   }
 }
-void UpdateWalker(walker *W, map *M) {
-  if (W) {
-    if (W->y < M->y && W->y >= 0 && W->x < M->x && W->x >= 0) {
-      if (M->map[W->y][W->x].walkerProp != 0){
+void UpdateCar(car *C, map *M) { // source du probleme...
+  if (C) {
+    if (C->y < M->y && C->y >= 0 && C->x < M->x && C->x >= 0) {
+      if (M->map[C->y][C->x].carProp != 0){
         int dir[4] = {NORTH,EAST,SOUTH,WEST};
         int r;
         while (1) {
           r = rand()%4;
-          if (hasprop(dir[r], M->map[W->y][W->x].walkerProp)) {
+          if (hasprop(dir[r], M->map[C->y][C->x].carProp)) {
             break;
           }
         }
         printf("\033[35;1H%s%d", COLOR.RES,dir[r]);
-        W->direction = dir[r];
-        MoveWalker(W,M,W->direction);
+        C->direction = dir[r];
+        MoveCar(C,M,C->direction);
       } else {
-        RemoveWalker(&W,M);
+        RemoveCar(&C,M);
       }
     }
   }
 }
-void UpdateWalkers(walker **W, map *M) {
-  for (size_t i = 0; i < NUMBEROFWALKERS; i++) {
-    UpdateWalker(W[i],M);
+void UpdateCars(car **C, map *M) {
+  for (size_t i = 0; i < NUMBEROFCARS; i++) {
+    UpdateCar(C[i],M);
   }
 }
-void RemoveWalkersOutside(walker **W, map *M){
-  for (size_t i = 0; i < NUMBEROFWALKERS; i++) {
-    if (W[i]) {
-      if (W[i]->y >= M->y || W[i]->y < 0 || W[i]->x >= M->x || W[i]->x < 0) {
-        RemoveWalker(&W[i],M);
+void RemoveCarsOutside(car **C, map *M){
+  for (size_t i = 0; i < NUMBEROFCARS; i++) {
+    if (C[i]) {
+      if (C[i]->y >= M->y || C[i]->y < 0 || C[i]->x >= M->x || C[i]->x < 0) {
+        RemoveCar(&C[i],M);
       }
     }
   }
-  RemoveWalkersAt(W,6,4,M);
-  RemoveWalkersAt(W,6,5,M);
-  RemoveWalkersAt(W,31,11,M);
-  RemoveWalkersAt(W,32,11,M);
-  RemoveWalkersAt(W,2,25,M);
-  RemoveWalkersAt(W,3,25,M);
-  RemoveWalkersAt(W,9,25,M);
-  RemoveWalkersAt(W,10,25,M);
-  RemoveWalkersAt(W,16,25,M);
-  RemoveWalkersAt(W,17,25,M);
-  RemoveWalkersAt(W,17,25,M);
-  RemoveWalkersAt(W,92,24,M);
-  RemoveWalkersAt(W,92,26,M);
-  RemoveWalkersAt(W,92,28,M);
-  RemoveWalkersAt(W,99,24,M);
-  RemoveWalkersAt(W,99,26,M);
-  RemoveWalkersAt(W,99,28,M);
 }
 
+
+
 int main(int argc, char **argv) {
-  srand(1);
+  srand(0);
   map M;
   LoadMap(&M,"data/map_rendu","data/map_color","data/pieton_carac","data/voiture_carac","data/train_carac","data/map_carac");
   AffMap(&M);
-  walker *W[NUMBEROFWALKERS] = {NULL};
-  PrintWalkerTab(W);
-  // AddWalker(W,8,4,SOUTH,&M);
-  for (size_t i = 0; i < 500; i++) {
-    AddWalkers(W,&M,i);
-    EraseWalkers(W,&M);
-    UpdateWalkers(W,&M);
-    RemoveWalkersOutside(W,&M);
-    PrintWalkerTab(W);
-    PrintWalkers(W,&M);
-
+  car *C[NUMBEROFCARS] = {NULL};
+  PrintCarTab(C);
+  for (size_t i = 0; i < -1; i++) {
+    AddCars(C,&M,i);
+    EraseCars(C,&M);
+    UpdateCars(C,&M);
+    RemoveCarsOutside(C,&M);
+    PrintCarTab(C);
+    PrintCars(C,&M);
+    // PrintCars(C,&M);
     printf("\033[37;1H%s", COLOR.RES);
     fflush(stdout);
-    // usleep(150000);
-    Pause();
+    usleep(10000);
   }
-  RemoveWalkers(W,&M);
+  RemoveCars(C,&M);
   printf("\033[37;1H%s", COLOR.RES);
   freemap(&M);
 	return 0;

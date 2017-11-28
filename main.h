@@ -8,7 +8,8 @@
 #include <time.h>
 #include "lib/libs.h"
 
-#define NUMBEROFCARS 400
+#define NUMBEROFCARS 150
+#define NUMBEROFWALKERS 400
 
 #define NORTH 1
 #define EAST  2
@@ -74,5 +75,13 @@ typedef struct{
 	char *color;
 	char *disp;
 }car;
+
+typedef struct{
+	int x;
+	int y;
+	char direction;
+	char *color;
+	char *disp;
+}walker;
 
 #endif
