@@ -3,7 +3,7 @@ const struct color COLOR = {
   .FBLA =	"\x1b[30m",	.FRED =	"\x1b[31m",	.FGRE =	"\x1b[32m",	.FYEL =	"\x1b[33m",	.FBLU =	"\x1b[34m",	.FMAG =	"\x1b[35m",	.FCYA =	"\x1b[36m",	.FWHI =	"\x1b[37m",	.BBLA =	"\x1b[40m",	.BRED =	"\x1b[41m",	.BGRE =	"\x1b[42m",	.BYEL =	"\x1b[43m",	.BBLU =	"\x1b[44m",	.BMAG =	"\x1b[45m",	.BCYA =	"\x1b[46m",	.BWHI =	"\x1b[47m",	.RES = 	"\x1b[0m",	.BOL = 	"\x1b[1m",	.BLI = 	"\x1b[5m",	.REV = 	"\x1b[7m",	.CON = 	"\x1b[8m"
 };
 const struct sprite SPRITE = {
-  .walker = "🚘", .walker = "00"
+  .car = "🚘", .walker = "0"
 };
 int  hextoi(char c) {
   if (c == '.') {
@@ -22,7 +22,7 @@ void Pause() {
 void AffMapElement(map *M, int y, int x) {
   printf("\033[%d;%dH", y+1, x+1);
   if (y < M->y && y >= 0 && x < M->x && x >= 0) {
-	   printf("%s%s", M->map[y][x].color,M->map[y][x].disp );//M->map[y][x].disp);
+	   printf("%s%s", M->map[y][x].color,M->map[y][x].disp );
    }
    printf("%s ",COLOR.RES);
 }
@@ -163,6 +163,194 @@ void freemap(map* M) {
   }
   free(M->map);
 }
+int isOccupied(map* M, int x, int y) {
+  if (y < M->y && y >= 0 && x < M->x && x >= 0) {
+    return M->map[y][x].occupied;
+  }
+    return 0;
+}
+
+
+car* NewCar(int posx, int posy, char direction, char* color) {
+	car *C = malloc(sizeof(car));
+	C->x = posx;
+	C->y = posy;
+	C->direction = direction;
+	C->disp = SPRITE.car; //["🚘","🚗"]
+  C->color = color;
+	return C;
+}
+void RemoveCar(car **C, map *M) {
+  if (*C) {
+    // OccupyCar(M,C->x,C->y,0);
+    free(*C);
+    *C = NULL;
+  }
+}
+void RemoveCarsAt(car **C, int x, int y,map *M) {
+  for (size_t i = 0; i < NUMBEROFCARS; i++) {
+    if (CarIsAt(C[i],x,y)) {
+      RemoveCar(&C[i],M);
+    }
+    printf("\033[%d;%dH%s %s", y+1, x+1, COLOR.BWHI, COLOR.RES);
+  }
+}
+void RemoveCars(car **C,map *M) {
+  for (size_t i = 0; i < NUMBEROFCARS; i++) {
+    RemoveCar(&C[i],M);
+  }
+}
+void PrintCar(car *C, map *M) {
+  if (C){
+    if (C->y < M->y && C->y >= 0 && C->x < M->x && C->x >= 0)  {
+      if (!(hasprop(M->map[C->y][C->x].mapProp,HIDDEN))) {
+        printf("\033[%d;%dH  \033[%d;%dH%s%s",C->y+1, C->x+1, C->y+1, C->x+1,C->color, C->disp);
+      }
+    }
+  }
+}
+void PrintCars(car **C, map *M){
+  for (size_t i = 0; i < NUMBEROFCARS; i++) {
+    if (C[i] != NULL) {
+      PrintCar(C[i],M);
+    }
+  }
+}
+void PrintCarTab(car **C) {
+  printf("\033[33;1H%s[", COLOR.RES);
+  for (int i = 0; i < NUMBEROFCARS; i++) {
+    if(C[i]) {
+      printf("%d,",C[i]->direction);
+    } else {
+      printf("%d,",0);
+    }
+  }
+  printf("\033[1D]\n");
+}
+void EraseCar(car *C, map* M) {
+  AffMapElement(M,C->y,C->x);
+  AffMapElement(M,C->y,C->x+1);
+}
+void EraseCars(car **C, map* M) {
+  for (size_t i = 0; i < NUMBEROFCARS; i++) {
+    if (C[i]) {
+      EraseCar(C[i],M);
+    }
+  }
+}
+void OccupyCar(map *M, int x, int y, int occupy){
+  if (y < M->y && y >= 0 && x < M->x && x >= 0) {
+    M->map[y][x].occupied = occupy;
+    if (x+1 < M->x){
+      M->map[y][x+1].occupied = occupy;
+    }
+  }
+}
+void AddCar(car **C, int x, int y, char dir, map *M) {
+  char *Colors[8] = {COLOR.FBLA,COLOR.FRED,COLOR.FGRE,COLOR.FYEL,COLOR.FBLU,COLOR.FMAG,COLOR.FCYA,COLOR.FWHI};
+  for(size_t i = 0; i < NUMBEROFCARS; i++) {
+    if (!(C[i])) {
+      if(!(isOccupied(M,x,y))) {
+        C[i] = NewCar(x,y,dir,Colors[rand()%8]);
+        OccupyCar(M,x,y,1);
+        // printf("\033[36;1H%s>>New car added @ %p", COLOR.RES,C[i]);
+        return;
+      }
+    }
+  }
+  printf("\033[%d;%dH%s %s", y+1, x+1, COLOR.BRED, COLOR.RES);
+}
+void AddCars(car **C, map *M, int timer) {
+  if (!(rand()%RATEOFSPAWNCARS)) {
+    AddCar(C,54,0,SOUTH,M);
+  }
+  if (!(rand()%RATEOFSPAWNCARS)) {
+    AddCar(C,25,29,NORTH,M);
+  }
+  if (!(rand()%RATEOFSPAWNCARS)) {
+    AddCar(C,108,15,WEST,M);
+  }
+  if (!(rand()%RATEOFSPAWNCARS)) {
+    AddCar(C,0,17,EAST,M);
+  }
+}
+int CarIsAt(car* C, int x, int y) {
+  if (C) {
+    if (C->x == x && C->y == y){
+      return 1;
+    }
+  }
+  return 0;
+}
+void MoveCar(car *C, map *M, char dir) {
+  if (C){
+    switch (dir) {
+      case NORTH:
+        OccupyCar(M,C->x,C->y,0);
+          if (!(isOccupied(M,C->x,C->y-1))) {
+          C->y--;
+        }
+        OccupyCar(M,C->x,C->y,1);
+        break;
+      case SOUTH:
+        OccupyCar(M,C->x,C->y,0);
+        if (!(isOccupied(M,C->x,C->y+1))) {
+          C->y++;
+        }
+        OccupyCar(M,C->x,C->y,1);
+        break;
+      case EAST:
+        OccupyCar(M,C->x,C->y,0);
+        if (!(isOccupied(M,C->x+2,C->y))) {
+          C->x++;
+        }
+        OccupyCar(M,C->x,C->y,1);
+        break;
+      case WEST:
+        OccupyCar(M,C->x,C->y,0);
+        if (!(isOccupied(M,C->x-1,C->y))) {
+          C->x--;
+        }
+        OccupyCar(M,C->x,C->y,1);
+        break;
+    }
+  }
+}
+void UpdateCar(car *C, map *M) { // source du probleme...
+  if (C) {
+    if (C->y < M->y && C->y >= 0 && C->x < M->x && C->x >= 0) {
+      if (M->map[C->y][C->x].carProp != 0){
+        int dir[4] = {NORTH,EAST,SOUTH,WEST};
+        int r;
+        while (1) {
+          r = rand()%4;
+          if (hasprop(dir[r], M->map[C->y][C->x].carProp)) {
+            break;
+          }
+        }
+        printf("\033[35;1H%s%d", COLOR.RES,dir[r]);
+        C->direction = dir[r];
+        MoveCar(C,M,C->direction);
+      } else {
+        RemoveCar(&C,M);
+      }
+    }
+  }
+}
+void UpdateCars(car **C, map *M) {
+  for (size_t i = 0; i < NUMBEROFCARS; i++) {
+    UpdateCar(C[i],M);
+  }
+}
+void RemoveCarsOutside(car **C, map *M){
+  for (size_t i = 0; i < NUMBEROFCARS; i++) {
+    if (C[i]) {
+      if (C[i]->y >= M->y || C[i]->y < 0 || C[i]->x >= M->x || C[i]->x < 0) {
+        RemoveCar(&C[i],M);
+      }
+    }
+  }
+}
 
 walker* NewWalker(int posx, int posy, char direction, char* color) {
 	walker *W = malloc(sizeof(walker));
@@ -188,12 +376,22 @@ int  WalkerIsAt(walker* W, int x, int y) {
   }
   return 0;
 }
+void OccupyWalker(map *M, int x, int y, int occupy){
+  if (y < M->y && y >= 0 && x < M->x && x >= 0) {
+    M->map[y][x].occupied = occupy;
+    // if (x+1 < M->x){
+    //   M->map[y][x+1].occupied = occupy;
+    // }
+  }
+}
 void RemoveWalkersAt(walker **W, int x, int y,map *M) {
   for (size_t i = 0; i < NUMBEROFWALKERS; i++) {
     if (WalkerIsAt(W[i],x,y)) {
+      OccupyWalker(M,x,y,0);
       RemoveWalker(&W[i],M);
     }
   }
+  printf("\033[%d;%dH%s %s", y+1, x+1, COLOR.BRED, COLOR.RES);
 }
 void RemoveWalkers(walker **W,map *M) {
   for (size_t i = 0; i < NUMBEROFWALKERS; i++) {
@@ -204,7 +402,7 @@ void PrintWalker(walker *W, map *M) {
   if (W){
     if (W->y < M->y && W->y >= 0 && W->x < M->x && W->x >= 0)  {
       if (!(hasprop(M->map[W->y][W->x].mapProp,HIDDEN))) {
-        printf("\033[%d;%dH  \033[%d;%dH%s%s",W->y+1, W->x+1, W->y+1, W->x+1,W->color, W->disp);
+        printf("\033[%d;%dH \033[%d;%dH%s%s",W->y+1, W->x+1, W->y+1, W->x+1,W->color, W->disp);
       }
     }
   }
@@ -229,7 +427,7 @@ void PrintWalkerTab(walker **W) {
 }
 void EraseWalker(walker *W, map* M) {
   AffMapElement(M,W->y,W->x);
-  AffMapElement(M,W->y,W->x+1);
+  // AffMapElement(M,W->y,W->x+1);
 }
 void EraseWalkers(walker **W, map* M) {
   for (size_t i = 0; i < NUMBEROFWALKERS; i++) {
@@ -237,20 +435,6 @@ void EraseWalkers(walker **W, map* M) {
       EraseWalker(W[i],M);
     }
   }
-}
-void OccupyWalker(map *M, int x, int y, int occupy){
-  if (y < M->y && y >= 0 && x < M->x && x >= 0) {
-    M->map[y][x].occupied = occupy;
-    if (x+1 < M->x){
-      M->map[y][x+1].occupied = occupy;
-    }
-  }
-}
-int  isOccupied(map* M, int x, int y) {
-  if (y < M->y && y >= 0 && x < M->x && x >= 0) {
-    return M->map[y][x].occupied;
-  }
-    return 0;
 }
 void AddWalker(walker **W, int x, int y, char dir, map *M) {
   char *Colors[8] = {COLOR.FBLA,COLOR.FRED,COLOR.FGRE,COLOR.FYEL,COLOR.FBLU,COLOR.FMAG,COLOR.FCYA,COLOR.FWHI};
@@ -264,57 +448,58 @@ void AddWalker(walker **W, int x, int y, char dir, map *M) {
       }
     }
   }
+  printf("\033[%d;%dH%s %s", y+1, x+1, COLOR.BGRE, COLOR.RES);
 }
 void AddWalkers(walker **W, map *M, int timer) {
-  if (!(rand()%10)) {
+  if (!(rand()%RATEOFSPAWNWALKERS)) {
     AddWalker(W,8,0,SOUTH,M);
   }
-  if (!(rand()%10)) {
+  if (!(rand()%RATEOFSPAWNWALKERS)) {
     AddWalker(W,16,0,SOUTH,M);
   }
-  if (!(rand()%10)) {
+  if (!(rand()%RATEOFSPAWNWALKERS)) {
     AddWalker(W,26,0,SOUTH,M);
   }
-  if (!(rand()%10)) {
+  if (!(rand()%RATEOFSPAWNWALKERS)) {
     AddWalker(W,51,0,SOUTH,M);
   }
-  if (!(rand()%10)) {
+  if (!(rand()%RATEOFSPAWNWALKERS)) {
     AddWalker(W,59,0,SOUTH,M);
   }
-  if (!(rand()%10)) {
+  if (!(rand()%RATEOFSPAWNWALKERS)) {
     AddWalker(W,66,0,SOUTH,M);
   }
-  if (!(rand()%10)) {
+  if (!(rand()%RATEOFSPAWNWALKERS)) {
     AddWalker(W,85,0,SOUTH,M);
   }
-  if (!(rand()%10)) {
+  if (!(rand()%RATEOFSPAWNWALKERS)) {
     AddWalker(W,106,0,SOUTH,M);
   }
-  if (!(rand()%10)) {
+  if (!(rand()%RATEOFSPAWNWALKERS)) {
     AddWalker(W,108,13,SOUTH,M);
   }
-  if (!(rand()%10)) {
+  if (!(rand()%RATEOFSPAWNWALKERS)) {
     AddWalker(W,0,19,SOUTH,M);
   }
-  if (!(rand()%10)) {
+  if (!(rand()%RATEOFSPAWNWALKERS)) {
     AddWalker(W,0,26,SOUTH,M);
   }
-  if (!(rand()%10)) {
+  if (!(rand()%RATEOFSPAWNWALKERS)) {
     AddWalker(W,21,29,SOUTH,M);
   }
-  if (!(rand()%10)) {
+  if (!(rand()%RATEOFSPAWNWALKERS)) {
     AddWalker(W,29,29,SOUTH,M);
   }
-  if (!(rand()%10)) {
+  if (!(rand()%RATEOFSPAWNWALKERS)) {
     AddWalker(W,108,20,SOUTH,M);
   }
-  if (!(rand()%10)) {
+  if (!(rand()%RATEOFSPAWNWALKERS)) {
     AddWalker(W,93,29,SOUTH,M);
   }
-  if (!(rand()%10)) {
+  if (!(rand()%RATEOFSPAWNWALKERS)) {
     AddWalker(W,72,29,SOUTH,M);
   }
-  if (!(rand()%10)) {
+  if (!(rand()%RATEOFSPAWNWALKERS)) {
     AddWalker(W,80,29,SOUTH,M);
   }
 
@@ -397,7 +582,6 @@ void RemoveWalkersOutside(walker **W, map *M){
   RemoveWalkersAt(W,10,25,M);
   RemoveWalkersAt(W,16,25,M);
   RemoveWalkersAt(W,17,25,M);
-  RemoveWalkersAt(W,17,25,M);
   RemoveWalkersAt(W,92,24,M);
   RemoveWalkersAt(W,92,26,M);
   RemoveWalkersAt(W,92,28,M);
@@ -412,22 +596,26 @@ int main(int argc, char **argv) {
   LoadMap(&M,"data/map_rendu","data/map_color","data/pieton_carac","data/voiture_carac","data/train_carac","data/map_carac");
   AffMap(&M);
   walker *W[NUMBEROFWALKERS] = {NULL};
-  PrintWalkerTab(W);
-  // AddWalker(W,8,4,SOUTH,&M);
-  for (size_t i = 0; i < 500; i++) {
+  car *C[NUMBEROFCARS] = {NULL};
+  for (size_t i = 0; i < -1; i++) {
     AddWalkers(W,&M,i);
+    AddCars(C,&M,i);
     EraseWalkers(W,&M);
+    EraseCars(C,&M);
     UpdateWalkers(W,&M);
+    UpdateCars(C,&M);
     RemoveWalkersOutside(W,&M);
-    PrintWalkerTab(W);
+    RemoveCarsOutside(C,&M);
     PrintWalkers(W,&M);
+    PrintCars(C,&M);
 
     printf("\033[37;1H%s", COLOR.RES);
     fflush(stdout);
-    // usleep(150000);
-    Pause();
+    usleep(150000);
+    // Pause();
   }
   RemoveWalkers(W,&M);
+  RemoveCars(C,&M);
   printf("\033[37;1H%s", COLOR.RES);
   freemap(&M);
 	return 0;

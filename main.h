@@ -9,7 +9,9 @@
 #include "lib/libs.h"
 
 #define NUMBEROFCARS 150
+#define RATEOFSPAWNCARS 15
 #define NUMBEROFWALKERS 400
+#define RATEOFSPAWNWALKERS 10	
 
 #define NORTH 1
 #define EAST  2
