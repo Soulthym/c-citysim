@@ -295,6 +295,14 @@ void RemoveCar(car **C, map *M) {
     *C = NULL;
   }
 }
+int CarIsAt(car* C, int x, int y) {
+  if (C) {
+    if (C->x == x && C->y == y){
+      return 1;
+    }
+  }
+  return 0;
+}
 void RemoveCarsAt(car **C, int x, int y,map *M) {
   for (size_t i = 0; i < NUMBEROFCARS; i++) {
     if (CarIsAt(C[i],x,y)) {
@@ -384,14 +392,6 @@ void AddCars(car **C, map *M, int timer) {
     AddCar(C,0,17,EAST,M);
   }
 }
-int CarIsAt(car* C, int x, int y) {
-  if (C) {
-    if (C->x == x && C->y == y){
-      return 1;
-    }
-  }
-  return 0;
-}
 void MoveCar(car *C, map *M, char dir) {
   if (C){
     switch (dir) {
@@ -426,7 +426,7 @@ void MoveCar(car *C, map *M, char dir) {
     }
   }
 }
-void UpdateCar(car *C, map *M) { // source du probleme...
+void UpdateCar(car *C, map *M) {
   if (C) {
     if (C->y < M->y && C->y >= 0 && C->x < M->x && C->x >= 0) {
       if (M->map[C->y][C->x].carProp != 0){
@@ -438,7 +438,7 @@ void UpdateCar(car *C, map *M) { // source du probleme...
             break;
           }
         }
-        printf("\033[35;1H%s%d", COLOR.RES,dir[r]);
+        // printf("\033[35;1H%s%d", COLOR.RES,dir[r]);
         C->direction = dir[r];
         MoveCar(C,M,C->direction);
       } else {
@@ -692,7 +692,7 @@ void UpdateWalker(walker *W, map *M) {
             break;
           }
         }
-        printf("\033[35;1H%s%d", COLOR.RES,dir[r]);
+        // printf("\033[35;1H%s%d", COLOR.RES,dir[r]);
         W->direction = dir[r];
         MoveWalker(W,M,W->direction);
       } else {
@@ -727,6 +727,19 @@ void RemoveWalkersOutside(walker **W, map *M){
   RemoveWalkersAt(W,100,28,M);
 }
 
+void SetParking(parking *P, int y) {
+  P->occupied = 0;
+  P->spawnWalkerx = 25;
+  P->spawnWalkery = y;
+  P->spawnCarx = 19;
+  P->spawnCary = y;
+}
+void SetParkings(parking *P) {
+  for (size_t y = 0; y < 10; y++) {
+    SetParking(&P[y],y);
+  }
+}
+
 int main(int argc, char **argv) {
   srand(1);
   map M;
@@ -734,6 +747,7 @@ int main(int argc, char **argv) {
   AffMap(&M);
   walker *W[NUMBEROFWALKERS] = {NULL};
   car *C[NUMBEROFCARS] = {NULL};
+  parking P[10];
   for (size_t i = 0; i < -1; i++) {
     AddWalkers(W,&M,i);
     AddCars(C,&M,i);
@@ -748,7 +762,7 @@ int main(int argc, char **argv) {
     PrintCars(C,&M);
     printf("\033[37;1H%s", COLOR.RES);
     fflush(stdout);
-    usleep(20000);
+    usleep(200000);
   }
   RemoveWalkers(W,&M);
   RemoveCars(C,&M);

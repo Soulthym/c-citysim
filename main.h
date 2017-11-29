@@ -10,8 +10,8 @@
 
 #define NUMBEROFCARS 150
 #define RATEOFSPAWNCARS 15
-#define NUMBEROFWALKERS 400
-#define RATEOFSPAWNWALKERS 10	
+#define NUMBEROFWALKERS 100
+#define RATEOFSPAWNWALKERS 20
 
 #define NORTH 1
 #define EAST  2
@@ -86,4 +86,12 @@ typedef struct{
 	char *disp;
 }walker;
 
+typedef struct{
+	char occupied;
+	char *carColor;
+	int spawnWalkerx;
+	int spawnWalkery;
+	int spawnCarx;
+	int spawnCary;
+} parking;
 #endif
