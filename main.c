@@ -727,6 +727,11 @@ void RemoveWalkersOutside(walker **W, map *M){
   RemoveWalkersAt(W,100,28,M);
 }
 
+void PrintPark(parking P,map *M) {
+  if (P.occupied) {
+    printf("\033[%d;%dH  \033[2D%s🚗", P.spawnWalkery+1, P.spawnWalkerx-2, P.carColor);
+  }
+}
 void SetParking(parking *P, int y) {
   P->occupied = 0;
   P->spawnWalkerx = 25;
@@ -739,30 +744,59 @@ void SetParkings(parking *P) {
     SetParking(&P[y],y);
   }
 }
+void Park(parking *P,car **C, walker **W, map *M) {
+  if (*C) {
+    if (!(P->occupied)){
+      if (CarIsAt(*C, P->spawnCarx, P->spawnCary)) { //&& !(rand()%2)
+        printf("\033[1;1H%sPARK", COLOR.FGRE);
+        EraseCar(*C,M);
+        AddWalker(W,P->spawnWalkerx,P->spawnWalkery,SOUTH,M);
+        OccupyCar(M,P->spawnCarx, P->spawnCary,0);
+        P->occupied = 1;
+        P->carColor = (*C)->color;
+        RemoveCar(C, M);
+      }
+    }
+  }
+}
+void Parks (parking *P,car **C, walker **W, map *M){
+  for (size_t j = 0; j < NUMBEROFCARS; j++) {
+    for (size_t i = 0; i < 10; i++) {
+      Park(&P[i],&C[i],W,M);
+    }
+  }
+  for (size_t i = 0; i < 10; i++) {
+    PrintPark(P[i],M);
+  }
+}
+
 
 int main(int argc, char **argv) {
-  srand(1);
+  srand(0);
   map M;
   LoadMap(&M,"data/map_rendu","data/map_color","data/pieton_carac","data/voiture_carac","data/train_carac","data/map_carac");
   AffMap(&M);
   walker *W[NUMBEROFWALKERS] = {NULL};
   car *C[NUMBEROFCARS] = {NULL};
   parking P[10];
+  SetParkings(P);
   for (size_t i = 0; i < -1; i++) {
-    AddWalkers(W,&M,i);
+    // AddWalkers(W,&M,i);
     AddCars(C,&M,i);
     EraseWalkers(W,&M);
     EraseCars(C,&M);
     UpdateWalkers(W,&M);
     UpdateCars(C,&M);
+    Parks(P,C,W,&M);
     RemoveWalkersOutside(W,&M);
     RemoveCarsOutside(C,&M);
     CleanMap(&M);
     PrintWalkers(W,&M);
     PrintCars(C,&M);
+    // Pause();
     printf("\033[37;1H%s", COLOR.RES);
     fflush(stdout);
-    usleep(200000);
+    usleep(100000);
   }
   RemoveWalkers(W,&M);
   RemoveCars(C,&M);
@@ -770,3 +804,34 @@ int main(int argc, char **argv) {
   freemap(&M);
 	return 0;
 }
+//
+// struct t{
+//   x
+//   y
+//   act 01
+//   cptarr 08
+//   premier? 01
+// }
+// [(1,0,n)(1,0,n)(1,0,n)(1,0,p)] // avance
+//
+// //arret :
+//   chercher p premier
+//     check position premier (case darret + timer == 0?)
+//       oui:  set timers [all]8
+//       non: avancer [all]
+//
+//
+// [(1,0,n)(1,0,n)(1,0,n)(1,0,p)] // arret
+
+// if premier
+//   if at case & ! timeout
+//     train[:].time = 8
+//   else
+//     time --
+//   if timeout
+//     avancer
+// else
+//   if premier blocke
+//     blocke
+//   else
+//     avancer
