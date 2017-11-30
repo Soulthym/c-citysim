@@ -51,6 +51,7 @@ extern const struct color COLOR;
 struct sprite{
 	char *car;
 	char *walker;
+	char *riviere[2];
 };
 extern const struct sprite SPRITE;
 
@@ -62,6 +63,7 @@ typedef struct {
 	char trainProp;
 	char mapProp;
 	char occupied;
+	char canfree;
 }mape;
 
 typedef struct {
@@ -73,6 +75,7 @@ typedef struct {
 typedef struct{
 	int x;
 	int y;
+	char canPark;
 	char direction;
 	char *color;
 	char *disp;
