@@ -748,7 +748,7 @@ void Park(parking *P,car **C, walker **W, map *M) {
   if (*C) {
     if (!(P->occupied)){
       if (CarIsAt(*C, P->spawnCarx, P->spawnCary)) { //&& !(rand()%2)
-        printf("\033[1;1H%sPARK", COLOR.FGRE);
+        // printf("\033[1;1H%sPARK", COLOR.FGRE);
         EraseCar(*C,M);
         AddWalker(W,P->spawnWalkerx,P->spawnWalkery,SOUTH,M);
         OccupyCar(M,P->spawnCarx, P->spawnCary,0);
@@ -781,7 +781,7 @@ int main(int argc, char **argv) {
   parking P[10];
   SetParkings(P);
   for (size_t i = 0; i < -1; i++) {
-    // AddWalkers(W,&M,i);
+    AddWalkers(W,&M,i);
     AddCars(C,&M,i);
     EraseWalkers(W,&M);
     EraseCars(C,&M);
