@@ -52,6 +52,7 @@ struct sprite{
 	char *car;
 	char *walker;
 	char *riviere[2];
+	char *train[2][11];
 };
 extern const struct sprite SPRITE;
 
@@ -97,4 +98,13 @@ typedef struct{
 	int spawnCarx;
 	int spawnCary;
 } parking;
+
+typedef struct{
+	int y;
+	int x;
+	int timer;
+	char dir;
+	int unspawn[5];
+	int spawn[5];
+} train;
 #endif

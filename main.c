@@ -3,7 +3,30 @@ const struct color COLOR = {
   .FBLA =	"\x1b[30m",	.FRED =	"\x1b[31m",	.FGRE =	"\x1b[32m",	.FYEL =	"\x1b[33m",	.FBLU =	"\x1b[34m",	.FMAG =	"\x1b[35m",	.FCYA =	"\x1b[36m",	.FWHI =	"\x1b[37m",	.BBLA =	"\x1b[40m",	.BRED =	"\x1b[41m",	.BGRE =	"\x1b[42m",	.BYEL =	"\x1b[43m",	.BBLU =	"\x1b[44m",	.BMAG =	"\x1b[45m",	.BCYA =	"\x1b[46m",	.BWHI =	"\x1b[47m",	.RES = 	"\x1b[0m",	.BOL = 	"\x1b[1m",	.BLI = 	"\x1b[5m",	.REV = 	"\x1b[7m",	.CON = 	"\x1b[8m"
 };
 const struct sprite SPRITE = {
-  .car = "🚘", .walker = "🚶", .riviere = {"\x1b[44m\x1b[36m~","\x1b[44m "}
+  .car = "🚘", .walker = "🚶", .riviere = {"\x1b[44m\x1b[36m~","\x1b[44m "} ,
+  .train =
+ {{"\x1b[33m│\x1b[36m┌─┐",
+           "\x1b[36m┌┼─┼┐",
+           "\x1b[36m││ ││",
+           "\x1b[36m├│N│┤",
+           "\x1b[36m││O││",
+           "\x1b[36m├│R│┤",
+           "\x1b[36m││D││",
+           "\x1b[36m├│ │┤",
+           "\x1b[36m││ ││",
+           "\x1b[36m└┼─┼┘",
+   "\x1b[33m│\x1b[36m└─┘"},
+  {"\x1b[33m│\x1b[31m┌─┐",
+           "\x1b[31m┌┼─┼┐",
+           "\x1b[31m││ ││",
+           "\x1b[31m├│ │┤",
+           "\x1b[31m││S││",
+           "\x1b[31m├│U│┤",
+           "\x1b[31m││D││",
+           "\x1b[31m├│ │┤",
+           "\x1b[31m││ ││",
+           "\x1b[31m└┼─┼┘",
+   "\x1b[33m│\x1b[31m└─┘"}}
 };
 
 int  hextoi(char c) {
@@ -769,6 +792,74 @@ void Parks (parking *P,car **C, walker **W, map *M){
   }
 }
 
+train *NewTrain(int x, int y, char dir) {
+  train *T = malloc(sizeof(train));
+  T->x = x;
+  T->y = y;
+  T->timer = 0;
+  T->dir = dir;
+  if (T->dir == 1){
+    for (size_t i = 0; i < 5; i++) {
+      T->spawn[i] = i*2;
+      T->unspawn[i] = i*2+1;
+    }
+  } else {
+    for (size_t i = 0; i < 5; i++) {
+      T->spawn[i] = -1;
+      T->unspawn[i] = -1;
+    }
+  }
+  return T;
+}
+void RemoveTrain(train **T) {
+  if (*T) {
+    free(*T);
+    *T = NULL;
+  }
+}
+void RemoveTrains(train **T) {
+  for (size_t i = 0; i < 2; i++) {
+    RemoveTrain(&T[i]);
+  }
+}
+int  TrainIsAt(train* T, int x, int y) {
+  if (T) {
+    if (T->x == x && T->y == y){
+      // printf("\033[37;1H%sFound Walker!", COLOR.RES);
+      return 1;
+    }
+  }
+  return 0;
+}
+void PrintTrainLine(train *T,int l, map *M){
+  if (T){
+    if (T->y+l >= 0 && T->y+l < M->y){
+      printf("\033[%d;%dH%s",T->y+1+l, T->x+1,SPRITE.train[T->dir][l]);
+    }
+  }
+}
+void PrintTrain(train *T, map *M) {
+  if (T){
+    for (size_t i = 0; i < 11; i++) {
+      PrintTrainLine(T,i,M);
+    }
+  }
+}
+void PrintTrains(train **T, map *M) {
+  for (size_t i = 0; i < 2; i++) {
+    PrintTrain(T[i],M);
+  }
+}
+void EraseTrain(train *T,map *M) {
+  for (size_t y = 0; y < 11; y++) {
+    for (size_t x = 0; x < 6; x++) {
+      AffMapElement(M,T->y+y,T->x+x);
+    }
+  }
+}
+void MoveTrain(train *T, map *M){
+  T->y += T->dir*2-1;
+}
 int main(int argc, char **argv) {
   srand(0);
   int tim = 0;
@@ -776,36 +867,46 @@ int main(int argc, char **argv) {
   LoadMap(&M,"data/map_rendu","data/map_color","data/pieton_carac","data/voiture_carac","data/train_carac","data/map_carac");
   walker *W[NUMBEROFWALKERS] = {NULL};
   car *C[NUMBEROFCARS] = {NULL};
+  train *T[2] = {NULL};
   parking P[10];
   SetParkings(P);
   InitRiver(&M);
   River(0,&M);
   AffMap(&M);
-  while(1) {
-    River(tim,&M);
-    AddWalkers(W,&M,tim);
-    AddCars(C,&M,tim);
-    EraseWalkers(W,&M);
-    EraseCars(C,&M);
-    UpdateWalkers(W,&M);
-    UpdateCars(C,&M);
-    // AffMap(&M);
-    Parks(P,C,W,&M);
-    RemoveWalkersOutside(W,&M);
-    RemoveCarsOutside(C,&M);
-    CleanMap(&M);
-    PrintWalkers(W,&M);
-    PrintCars(C,&M);
-    printf("\033[37;1H%s", COLOR.RES);
-    fflush(stdout);
-    // Pause();
-    usleep(50000);
-    tim ++;
-    if (tim == 400)
-      break;
+  T[0] = NewTrain(38,15,0);
+  for (size_t i = 0; i < 50; i++) {
+    AffMap(&M);
+    PrintTrain(T[0],&M);
+    Pause();
+    EraseTrain(T[0],&M);
+    T[0]->y --;
   }
+  // while(1) {
+  //   River(tim,&M);
+  //   AddWalkers(W,&M,tim);
+  //   AddCars(C,&M,tim);
+  //   EraseWalkers(W,&M);
+  //   EraseCars(C,&M);
+  //   UpdateWalkers(W,&M);
+  //   UpdateCars(C,&M);
+  //   // AffMap(&M);
+  //   Parks(P,C,W,&M);
+  //   RemoveWalkersOutside(W,&M);
+  //   RemoveCarsOutside(C,&M);
+  //   CleanMap(&M);
+  //   PrintWalkers(W,&M);
+  //   PrintCars(C,&M);
+  //   printf("\033[37;1H%s", COLOR.RES);
+  //   fflush(stdout);
+  //   // Pause();
+  //   usleep(50000);
+  //   tim ++;
+  //   if (tim == 400)
+  //     break;
+  // }
   RemoveWalkers(W,&M);
   RemoveCars(C,&M);
+  RemoveTrains(T);
   printf("\033[37;1H%s", COLOR.RES);
   freemap(&M);
 	return 0;
