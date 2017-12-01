@@ -29,6 +29,22 @@ const struct sprite SPRITE = {
    "\x1b[33m│\x1b[31m└─┘"}}
 };
 
+char key_pressed(){
+  struct termios oldterm, newterm;
+  int oldfd; char c, result = 0;
+  tcgetattr (STDIN_FILENO, &oldterm);
+  newterm = oldterm; newterm.c_lflag &= ~(ICANON | ECHO);
+  tcsetattr (STDIN_FILENO, TCSANOW, &newterm);
+  oldfd = fcntl(STDIN_FILENO, F_GETFL, 0);
+  fcntl (STDIN_FILENO, F_SETFL, oldfd | O_NONBLOCK);
+  c = getchar();
+  tcsetattr (STDIN_FILENO, TCSANOW, &oldterm);
+  fcntl (STDIN_FILENO, F_SETFL, oldfd);
+  if (c != EOF) {
+    ungetc(c, stdin); result = getchar();
+  }
+  return result;
+}
 int  hextoi(char c) {
   if (c == '.') {
     return 0;
@@ -228,11 +244,27 @@ void CleanMap(map *M){
     AffMapElement(M,26,i);
     AffMapElement(M,28,i);
   }
+  for (size_t i = 0; i < M->y; i++) {
+    AffMapElement(M,i,49);
+  }
+
   for (size_t y = 21; y < 30; y++) {
     for (size_t x = 37; x < 43; x++) {
       AffMapElement(M,y,x);
     }
   }
+  for (size_t y = 21; y < 31; y++) {
+    for (size_t x = 50; x < 72; x++) {
+      AffMapElement(M,y,x);
+    }
+  }
+  for (size_t x = 50; x < 76; x++) {
+    AffMapElement(M,18,x);
+  }
+  for (size_t x = 50; x < 54; x++) {
+    AffMapElement(M,14,x);
+  }
+  AffMapElement(M,16,50);
 }
 void InitRiver(map *M) {
   for (size_t y = 21; y < 30; y++) {
@@ -377,17 +409,21 @@ car *AddCar(car **C, int x, int y, char dir, map *M, char* color) {
 }
 void AddCars(car **C, map *M, int timer) {
   if (!(rand()%RATEOFSPAWNCARS)) {
-    AddCar(C,54,0,SOUTH,M,NULL);
+    AddCar(C,55,0,SOUTH,M,NULL);
   }
-  if (!(rand()%RATEOFSPAWNCARS)) {
-    AddCar(C,25,29,NORTH,M,NULL);
+  printf("\033[1;56H%s %s",COLOR.BGRE, COLOR.RES);
+  if (!(rand()%(RATEOFSPAWNCARS*2))) {
+    AddCar(C,26,29,NORTH,M,NULL);
   }
+  printf("\033[30;27H%s %s",COLOR.BGRE, COLOR.RES);
   if (!(rand()%RATEOFSPAWNCARS)) {
     AddCar(C,108,15,WEST,M,NULL);
   }
-  if (!(rand()%RATEOFSPAWNCARS)) {
+  printf("\033[16;109H%s %s",COLOR.BGRE, COLOR.RES);
+  if (!(rand()%(RATEOFSPAWNCARS*2))) {
     AddCar(C,0,17,EAST,M,NULL);
   }
+  printf("\033[18;1H%s %s",COLOR.BGRE, COLOR.RES);
 }
 void MoveCar(car *C, map *M, char dir) {
   if (C){
@@ -435,11 +471,8 @@ void UpdateCar(car *C, map *M) {
             break;
           }
         }
-        // printf("\033[35;1H%s%d", COLOR.RES,dir[r]);
         C->direction = dir[r];
         MoveCar(C,M,C->direction);
-      } else {
-        RemoveCar(&C,M);
       }
     }
   }
@@ -692,8 +725,6 @@ void UpdateWalker(walker *W, map *M) {
         // printf("\033[35;1H%s%d", COLOR.RES,dir[r]);
         W->direction = dir[r];
         MoveWalker(W,M,W->direction);
-      } else {
-        RemoveWalker(&W,M);
       }
     }
   }
@@ -798,10 +829,10 @@ train *NewTrain(int x, int y, char dir) {
   T->y = y;
   T->timer = 0;
   T->dir = dir;
-  if (T->dir == 1){
+  if (T->dir == 0){
     for (size_t i = 0; i < 5; i++) {
-      T->spawn[i] = i*2;
-      T->unspawn[i] = i*2+1;
+      T->spawn[i] = (i+2)*2;
+      T->unspawn[i] = (i+2)*2+1;
     }
   } else {
     for (size_t i = 0; i < 5; i++) {
@@ -843,6 +874,7 @@ void PrintTrain(train *T, map *M) {
     for (size_t i = 0; i < 11; i++) {
       PrintTrainLine(T,i,M);
     }
+    // printf("\033[37;1H%s%d", COLOR.RES, T->y);
   }
 }
 void PrintTrains(train **T, map *M) {
@@ -850,64 +882,301 @@ void PrintTrains(train **T, map *M) {
     PrintTrain(T[i],M);
   }
 }
+void PrintTrainsTab(train **T) {
+  printf("\033[33;1H%s[", COLOR.RES);
+  for (int i = 0; i < 2; i++) {
+    if(T[i]) {
+      printf("%d,",T[i]->timer);
+    } else {
+      printf("N,");
+    }
+  }
+  printf("\033[1D]    \n");
+}
 void EraseTrain(train *T,map *M) {
-  for (size_t y = 0; y < 11; y++) {
-    for (size_t x = 0; x < 6; x++) {
-      AffMapElement(M,T->y+y,T->x+x);
+  if (T) {
+    for (size_t y = 0; y < 11; y++) {
+      for (size_t x = 0; x < 5; x++) {
+        if(T->y+y >= 0 && T->y+y < M->y) {
+          AffMapElement(M,T->y+y,T->x+x);
+        }
+      }
     }
   }
 }
-void MoveTrain(train *T, map *M){
-  T->y += T->dir*2-1;
+void EraseTrains(train **T, map *M) {
+  for (size_t i = 0; i < 2; i++) {
+    EraseTrain(T[i],M);
+  }
 }
-int main(int argc, char **argv) {
-  srand(0);
+void MoveTrain(train *T){
+  if (T) {
+    if ((T->y == 2 && T->dir == 0) || (T->y == 0 && T->dir == 1)) {
+      T->timer = 15;
+      T->y += T->dir*2-1;
+    }
+    if (T->timer == 0) {
+      T->y += T->dir*2-1;
+    } else {
+      T->timer --;
+    }
+  }
+}
+void MoveTrains(train **T){
+  for (size_t i = 0; i < 2; i++) {
+    MoveTrain(T[i]);
+  }
+}
+void UpdateTrains(train **T, int tim){
+  MoveTrains(T);
+  if (T[0]){
+    if (T[0]->y <= -11){
+      RemoveTrain(&T[0]);
+    }
+  } else if (!(tim % 150)) {
+    T[0] = NewTrain(44,30,0);
+  }
+  if (T[1]){
+    if (T[1]->y >=30){
+      RemoveTrain(&T[1]);
+    }
+  } else if (!((tim + 50) %150)) {
+    T[1] = NewTrain(38,-11,1);
+  }
+}
+void TrainWalkerSpawn(train **T, walker **W, map *M) {
+  for (size_t t = 0; t < 2; t++) {
+    for (size_t i = 0; i < 5; i++) {
+      if (T[t]){
+        if (T[t]->spawn[i] > 0 && T[t]->timer > 0) {
+          if (!(rand()%3)) AddWalker(W,50,T[t]->spawn[i],NORTH,M);
+          if (!(rand()%3)) AddWalker(W,51,T[t]->spawn[i],SOUTH,M);
+        }
+      }
+    }
+  }
+}
+
+fire *NewFire(int x1,int y1,int x2,int y2,int wx1,int wy1,int wp1,int wx2,int wy2,int wp2,int cx1,int cy1,int cp1,int cx2,int cy2,int cp2,int timer){
+  fire* F = malloc(sizeof(fire));
+  F->x1 = x1;
+  F->y1 = y1;
+  F->x2 = x2;
+  F->y2 = y2;
+  F->wx1 = wx1;
+  F->wy1 = wy1;
+  F->wx2 = wx2;
+  F->wy2 = wy2;
+  F->wp1 = wp1;
+  F->wp2 = wp2;
+  F->cx1 = cx1;
+  F->cy1 = cy1;
+  F->cx2 = cx2;
+  F->cy2 = cy2;
+  F->cp1 = cp1;
+  F->cp2 = cp2;
+  F->timer = timer;
+  return F;
+}
+void UpdateFire(fire *F, map* M){
+  if (F){
+    F->timer++;
+    if (F->timer < 5) {      //RR
+      F->color1 = COLOR.FRED;
+      F->color2 = COLOR.FRED;
+      M->map[F->wy1][F->wx1].walkerProp &= ~F->wp1;
+      M->map[F->wy2][F->wx2].walkerProp &= ~F->wp2;
+      M->map[F->cy1][F->cx1].carProp &= ~F->cp1;
+      M->map[F->cy2][F->cx2].carProp &= ~F->cp2;
+    }
+    else if (F->timer < 30) {//RV
+      F->color1 = COLOR.FRED;
+      F->color2 = COLOR.FGRE;
+      M->map[F->wy1][F->wx1].walkerProp |= F->wp1;
+      M->map[F->wy2][F->wx2].walkerProp |= F->wp2;
+      M->map[F->cy1][F->cx1].carProp &= ~F->cp1;
+      M->map[F->cy2][F->cx2].carProp &= ~F->cp2;
+    }
+    else if (F->timer < 40) {//RO
+      F->color1 = COLOR.FRED;
+      F->color2 = COLOR.FYEL;
+      M->map[F->wy1][F->wx1].walkerProp &= ~F->wp1;
+      M->map[F->wy2][F->wx2].walkerProp &= ~F->wp2;
+      M->map[F->cy1][F->cx1].carProp &= ~F->cp1;
+      M->map[F->cy2][F->cx2].carProp &= ~F->cp2;
+    }
+    else if (F->timer < 45) {//RR
+      F->color1 = COLOR.FRED;
+      F->color2 = COLOR.FRED;
+    }
+    else if (F->timer < 70) {//VR
+      F->color1 = COLOR.FGRE;
+      F->color2 = COLOR.FRED;
+      M->map[F->wy1][F->wx1].walkerProp &= ~F->wp1;
+      M->map[F->wy2][F->wx2].walkerProp &= ~F->wp2;
+      M->map[F->cy1][F->cx1].carProp |= F->cp1;
+      M->map[F->cy2][F->cx2].carProp |= F->cp2;
+    }
+    else if (F->timer < 80) {//OR
+      F->color1 = COLOR.FYEL;
+      F->color2 = COLOR.FRED;
+      M->map[F->wy1][F->wx1].walkerProp &= ~F->wp1;
+      M->map[F->wy2][F->wx2].walkerProp &= ~F->wp2;
+      M->map[F->cy1][F->cx1].carProp &= ~F->cp1;
+      M->map[F->cy2][F->cx2].carProp &= ~F->cp2;
+    }
+    else {
+      F->timer = 0;
+    }
+  }
+}
+void UpdateFires(fire **F, map *M) {
+  for (size_t i = 0; i < NUMBEROFFIRES; i++) {
+    UpdateFire(F[i],M);
+  }
+}
+void PrintFire(fire *F, map *M){
+  if (F) {
+    printf("\033[%d;%dH%s🚦",F->y1+1,F->x1+1,F->color1);
+    printf("\033[%d;%dH%s🚦",F->y2+1,F->x2+1,F->color2);
+    // printf("\033[%d;%dH%s%d",F->wy1+1,F->wx1+1,COLOR.FWHI,M->map[F->wy1][F->wx1].walkerProp);
+    // printf("\033[%d;%dH%s%d",F->wy2+1,F->wx2+1,COLOR.FWHI,M->map[F->wy2][F->wx2].walkerProp);
+    // printf("\033[%d;%dH%s%d",F->cy1+1,F->cx1+1,COLOR.FWHI,M->map[F->cy1][F->cx1].carProp);
+    // printf("\033[%d;%dH%s%d",F->cy2+1,F->cx2+1,COLOR.FWHI,M->map[F->cy2][F->cx2].carProp);
+  }
+}
+void PrintFires(fire **F, map *M) {
+  for (size_t i = 0; i < NUMBEROFFIRES; i++) {
+    PrintFire(F[i],M);
+  }
+}
+void SetFires(fire **F) {
+  F[0] = NewFire(15,14, 10,11, 8,12,EAST, 15,13,WEST, 15,15, WEST, 0,0,0,0);
+  F[1] = NewFire(74,18, 78,21, 79,20,WEST, 73,19,EAST, 73,17,EAST, 0,0,0, 30);
+}
+
+void RemoveFire(fire **F){
+  if (*F) {
+    free(*F);
+    *F = NULL;
+  }
+}
+void RemoveFires(fire **F) {
+  for (size_t i = 0; i < NUMBEROFFIRES; i++) {
+    RemoveFire(&F[i]);
+  }
+}
+void FlowMode() {
   int tim = 0;
   map M;
   LoadMap(&M,"data/map_rendu","data/map_color","data/pieton_carac","data/voiture_carac","data/train_carac","data/map_carac");
   walker *W[NUMBEROFWALKERS] = {NULL};
   car *C[NUMBEROFCARS] = {NULL};
   train *T[2] = {NULL};
+  fire* F[NUMBEROFFIRES] = {NULL};
+  SetFires(F);
   parking P[10];
   SetParkings(P);
   InitRiver(&M);
   River(0,&M);
   AffMap(&M);
-  T[0] = NewTrain(38,15,0);
-  for (size_t i = 0; i < 50; i++) {
-    AffMap(&M);
-    PrintTrain(T[0],&M);
-    Pause();
-    EraseTrain(T[0],&M);
-    T[0]->y --;
+  while(1) {
+    UpdateFires(F,&M);
+    River(tim,&M);
+    AddWalkers(W,&M,tim);
+    AddCars(C,&M,tim);
+    EraseTrains(T,&M);
+    EraseWalkers(W,&M);
+    EraseCars(C,&M);
+    UpdateTrains(T,tim);
+    UpdateWalkers(W,&M);
+    UpdateCars(C,&M);
+    TrainWalkerSpawn(T,W,&M);
+    Parks(P,C,W,&M);
+    RemoveWalkersOutside(W,&M);
+    RemoveCarsOutside(C,&M);
+    CleanMap(&M);
+    PrintTrains(T,&M);
+    PrintWalkers(W,&M);
+    PrintCars(C,&M);
+    PrintFires(F,&M);
+    printf("\033[37;1H%s", COLOR.RES);
+    fflush(stdout);
+    usleep(150000);
+    // getchar();
+    tim ++;
+    if (key_pressed() == 'q')
+      break;
   }
-  // while(1) {
-  //   River(tim,&M);
-  //   AddWalkers(W,&M,tim);
-  //   AddCars(C,&M,tim);
-  //   EraseWalkers(W,&M);
-  //   EraseCars(C,&M);
-  //   UpdateWalkers(W,&M);
-  //   UpdateCars(C,&M);
-  //   // AffMap(&M);
-  //   Parks(P,C,W,&M);
-  //   RemoveWalkersOutside(W,&M);
-  //   RemoveCarsOutside(C,&M);
-  //   CleanMap(&M);
-  //   PrintWalkers(W,&M);
-  //   PrintCars(C,&M);
-  //   printf("\033[37;1H%s", COLOR.RES);
-  //   fflush(stdout);
-  //   // Pause();
-  //   usleep(50000);
-  //   tim ++;
-  //   if (tim == 400)
-  //     break;
-  // }
   RemoveWalkers(W,&M);
   RemoveCars(C,&M);
   RemoveTrains(T);
   printf("\033[37;1H%s", COLOR.RES);
   freemap(&M);
-	return 0;
+  RemoveFires(F);
+}
+void DangerMode() {
+  while(1) {
+    char *Colors[8] = {COLOR.FBLA,COLOR.FRED,COLOR.FGRE,COLOR.FYEL,COLOR.FBLU,COLOR.FMAG,COLOR.FCYA,COLOR.FWHI};
+    printf("\033[%d;%dH%sWorkInProgress...",(rand()%35)+1,rand()%106+1, Colors[rand()%8]);
+    fflush(stdout);
+    usleep(10000);
+    if (key_pressed() == 'q') break;
+  }
+}
+
+char Menu (char *FileName) {
+  char *Colors[8] = {COLOR.FBLA,COLOR.FRED,COLOR.FGRE,COLOR.FYEL,COLOR.FBLU,COLOR.FMAG,COLOR.FCYA,COLOR.FWHI};
+  char c;
+  while (1) {
+    printf("\033[2J\033[1;1H");
+    FILE *FMENU=fopen(FileName, "r");
+    if (FMENU == NULL) {
+      printf("%s not found\n",FileName);
+      return 0;
+    }
+    else {
+      c=fgetc(FMENU);
+      printf("%s",Colors[rand()%4]);
+      while(c!=EOF) {
+        if (c == '\n') printf("%s",Colors[rand()%4]);
+        printf("%c",c);
+        c=fgetc(FMENU);
+      }
+      fclose(FMENU);
+    }
+    fflush(stdout);
+    printf("\033[2J\033[1;1H%s", COLOR.RES);
+    usleep(150000);
+    c = key_pressed();
+    switch (c) {
+      case 'd':
+      case 'D':
+        return 'd';
+      case 'n':
+      case 'N':
+        return 'n';
+      case 'q':
+      case 'Q':
+        return 'q';
+    }
+  }
+}
+
+int main(int argc, char **argv) {
+  srand(time(NULL));
+  char choice;
+  do {
+    choice = Menu("data/mn");
+    switch (choice) {
+      case 'n':
+        FlowMode();
+        break;
+      case 'd':
+        DangerMode();
+        break;
+    }
+  } while (choice != 'q');
+  printf("\033[2J\033[1;1H%s", COLOR.RES);
+  return 0;
 }

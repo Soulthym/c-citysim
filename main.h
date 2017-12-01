@@ -6,12 +6,18 @@
 #include <string.h>
 #include <unistd.h>
 #include <time.h>
+#include <signal.h>
+#include <termios.h>
+#include <fcntl.h>
+
 #include "lib/libs.h"
 
 #define NUMBEROFCARS 150
-#define RATEOFSPAWNCARS 15
+#define RATEOFSPAWNCARS 10
 #define NUMBEROFWALKERS 100
-#define RATEOFSPAWNWALKERS 20
+#define RATEOFSPAWNWALKERS 30
+#define NUMBEROFFIRES 2
+
 
 #define NORTH 1
 #define EAST  2
@@ -107,4 +113,28 @@ typedef struct{
 	int unspawn[5];
 	int spawn[5];
 } train;
+
+typedef struct {
+	int x1;
+	int y1;
+	int x2;
+	int y2;
+	int wx1;
+	int wy1;
+	int wx2;
+	int wy2;
+	int wp1;
+	int wp2;
+	int cx1;
+	int cy1;
+	int cx2;
+	int cy2;
+	int cp1;
+	int cp2;
+
+	int timer;
+	char *color1;
+	char *color2;
+}fire;
+
 #endif
