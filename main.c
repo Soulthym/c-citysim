@@ -411,19 +411,19 @@ void AddCars(car **C, map *M, int timer) {
   if (!(rand()%RATEOFSPAWNCARS)) {
     AddCar(C,55,0,SOUTH,M,NULL);
   }
-  printf("\033[1;56H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%(RATEOFSPAWNCARS*2))) {
+  // printf("\033[1;56H%s %s",COLOR.BGRE, COLOR.RES);
+  if (!(rand()%(RATEOFSPAWNCARS))) {
     AddCar(C,26,29,NORTH,M,NULL);
   }
-  printf("\033[30;27H%s %s",COLOR.BGRE, COLOR.RES);
+  // printf("\033[30;27H%s %s",COLOR.BGRE, COLOR.RES);
   if (!(rand()%RATEOFSPAWNCARS)) {
     AddCar(C,108,15,WEST,M,NULL);
   }
-  printf("\033[16;109H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%(RATEOFSPAWNCARS*2))) {
+  // printf("\033[16;109H%s %s",COLOR.BGRE, COLOR.RES);
+  if (!(rand()%(RATEOFSPAWNCARS))) {
     AddCar(C,0,17,EAST,M,NULL);
   }
-  printf("\033[18;1H%s %s",COLOR.BGRE, COLOR.RES);
+  // printf("\033[18;1H%s %s",COLOR.BGRE, COLOR.RES);
 }
 void MoveCar(car *C, map *M, char dir) {
   if (C){
@@ -832,12 +832,10 @@ train *NewTrain(int x, int y, char dir) {
   if (T->dir == 0){
     for (size_t i = 0; i < 5; i++) {
       T->spawn[i] = (i+2)*2;
-      T->unspawn[i] = (i+2)*2+1;
     }
   } else {
     for (size_t i = 0; i < 5; i++) {
       T->spawn[i] = -1;
-      T->unspawn[i] = -1;
     }
   }
   return T;
@@ -948,9 +946,14 @@ void TrainWalkerSpawn(train **T, walker **W, map *M) {
   for (size_t t = 0; t < 2; t++) {
     for (size_t i = 0; i < 5; i++) {
       if (T[t]){
-        if (T[t]->spawn[i] > 0 && T[t]->timer > 0) {
-          if (!(rand()%3)) AddWalker(W,50,T[t]->spawn[i],NORTH,M);
-          if (!(rand()%3)) AddWalker(W,51,T[t]->spawn[i],SOUTH,M);
+        if (T[t]->timer > 0) {
+          if (T[t]->spawn[i] > 0) {
+            if (!(rand()%3)) AddWalker(W,50,T[t]->spawn[i],NORTH,M);
+            if (!(rand()%3)) AddWalker(W,51,T[t]->spawn[i],SOUTH,M);
+          } else{
+            if (!(rand()%3)) AddWalker(W,31,12,NORTH,M);
+            if (!(rand()%3)) AddWalker(W,31,13,SOUTH,M);
+          }
         }
       }
     }
@@ -1116,6 +1119,7 @@ void FlowMode() {
   RemoveFires(F);
 }
 void DangerMode() {
+  printf("\033[2J\033[1;1H%s", COLOR.RES);
   while(1) {
     char *Colors[8] = {COLOR.FBLA,COLOR.FRED,COLOR.FGRE,COLOR.FYEL,COLOR.FBLU,COLOR.FMAG,COLOR.FCYA,COLOR.FWHI};
     printf("\033[%d;%dH%sWorkInProgress...",(rand()%35)+1,rand()%106+1, Colors[rand()%8]);
@@ -1125,9 +1129,18 @@ void DangerMode() {
   }
 }
 
+void PrintArrow(int x, int y, char* color){
+  printf("\033[%d;%dH%s    __",y+1,x+1,color);
+  printf("\033[%d;%dH%s ___\\ \\",y+2,x+1,color);
+  printf("\033[%d;%dH%s(___)> >",y+3,x+1,color);
+  printf("\033[%d;%dH%s    /_/",y+4,x+1,color);
+  printf("\033[33;1H%s",COLOR.RES);
+}
 char Menu (char *FileName) {
   char *Colors[8] = {COLOR.FBLA,COLOR.FRED,COLOR.FGRE,COLOR.FYEL,COLOR.FBLU,COLOR.FMAG,COLOR.FCYA,COLOR.FWHI};
   char c;
+  int x = 20, y = 20, choice = 'n';
+  char *colo = COLOR.FGRE;
   while (1) {
     printf("\033[2J\033[1;1H");
     FILE *FMENU=fopen(FileName, "r");
@@ -1145,23 +1158,45 @@ char Menu (char *FileName) {
       }
       fclose(FMENU);
     }
-    fflush(stdout);
-    printf("\033[2J\033[1;1H%s", COLOR.RES);
-    usleep(150000);
-    c = key_pressed();
-    switch (c) {
-      case 'd':
-      case 'D':
-        return 'd';
-      case 'n':
-      case 'N':
-        return 'n';
-      case 'q':
-      case 'Q':
-        return 'q';
+    PrintArrow(x,y,colo);
+    for (size_t i = 0; i <15; i++) {
+      fflush(stdout);
+      usleep(50000);
+      c = key_pressed();
+      switch (c) {
+          case 'D':
+          case 'd':
+            return 'd';
+            break;
+          case 'N':
+          case 'n':
+            return 'n';
+          case '\n':
+            return choice;
+          case 'q':
+            return 'q';
+          case 'A':
+            choice = 'n';
+            x = 20;
+            y = 20;
+            colo = COLOR.FGRE;
+            break;
+          case 'B':
+            choice = 'd';
+            x = 20;
+            y = 26;
+            colo = COLOR.FRED;
+            break;
+      }
     }
+    printf("\033[2J\033[1;1H%s", COLOR.RES);
   }
 }
+
+// int main(){
+//   PrintArrow(10,20,COLOR.FRED);
+//   return 0;
+// }
 
 int main(int argc, char **argv) {
   srand(time(NULL));
