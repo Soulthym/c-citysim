@@ -407,20 +407,20 @@ car *AddCar(car **C, int x, int y, char dir, map *M, char* color) {
   return NULL;
   // printf("\033[%d;%dH%s %s", y+1, x+1, COLOR.BRED, COLOR.RES);
 }
-void AddCars(car **C, map *M, int timer) {
-  if (!(rand()%RATEOFSPAWNCARS)) {
+void AddCars(car **C, map *M, int timer,int speed) {
+  if (!(rand()%(RATEOFSPAWNCARS/speed))) {
     AddCar(C,55,0,SOUTH,M,NULL);
   }
   // printf("\033[1;56H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%(RATEOFSPAWNCARS))) {
+  if (!(rand()%(RATEOFSPAWNCARS/speed))) {
     AddCar(C,26,29,NORTH,M,NULL);
   }
   // printf("\033[30;27H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%RATEOFSPAWNCARS)) {
+  if (!(rand()%(RATEOFSPAWNCARS/speed))) {
     AddCar(C,108,15,WEST,M,NULL);
   }
   // printf("\033[16;109H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%(RATEOFSPAWNCARS))) {
+  if (!(rand()%(RATEOFSPAWNCARS/speed))) {
     AddCar(C,0,17,EAST,M,NULL);
   }
   // printf("\033[18;1H%s %s",COLOR.BGRE, COLOR.RES);
@@ -590,89 +590,89 @@ void AddWalker(walker **W, int x, int y, char dir, map *M) {
     }
   }
 }
-void AddWalkers(walker **W, map *M, int timer) {
-  if (!(rand()%RATEOFSPAWNWALKERS)) {
+void AddWalkers(walker **W, map *M, int timer, int speed) {
+  if (!(rand()%(RATEOFSPAWNWALKERS/speed))) {
     AddWalker(W,8,0,SOUTH,M);
   }//printf("\033[1;9H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%RATEOFSPAWNWALKERS)) {
+  if (!(rand()%(RATEOFSPAWNWALKERS/speed))) {
     AddWalker(W,16,0,SOUTH,M);
   }//printf("\033[1;17H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%RATEOFSPAWNWALKERS)) {
+  if (!(rand()%(RATEOFSPAWNWALKERS/speed))) {
     AddWalker(W,26,0,SOUTH,M);
   }//printf("\033[1;27H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%RATEOFSPAWNWALKERS)) {
+  if (!(rand()%(RATEOFSPAWNWALKERS/speed))) {
     AddWalker(W,51,0,SOUTH,M);
   }//printf("\033[1;52H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%RATEOFSPAWNWALKERS)) {
+  if (!(rand()%(RATEOFSPAWNWALKERS/speed))) {
     AddWalker(W,59,0,SOUTH,M);
   }//printf("\033[1;60H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%RATEOFSPAWNWALKERS)) {
+  if (!(rand()%(RATEOFSPAWNWALKERS/speed))) {
     AddWalker(W,66,0,SOUTH,M);
   }//printf("\033[1;67H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%RATEOFSPAWNWALKERS)) {
+  if (!(rand()%(RATEOFSPAWNWALKERS/speed))) {
     AddWalker(W,85,0,SOUTH,M);
   }//printf("\033[1;86H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%RATEOFSPAWNWALKERS)) {
+  if (!(rand()%(RATEOFSPAWNWALKERS/speed))) {
     AddWalker(W,106,0,SOUTH,M);
   }//printf("\033[1;107H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%RATEOFSPAWNWALKERS)) {
+  if (!(rand()%(RATEOFSPAWNWALKERS/speed))) {
     AddWalker(W,108,13,SOUTH,M);
   }//printf("\033[14;109H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%RATEOFSPAWNWALKERS)) {
+  if (!(rand()%(RATEOFSPAWNWALKERS/speed))) {
     AddWalker(W,0,19,SOUTH,M);
   }//printf("\033[20;1H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%RATEOFSPAWNWALKERS)) {
+  if (!(rand()%(RATEOFSPAWNWALKERS/speed))) {
     AddWalker(W,0,26,SOUTH,M);
   }//printf("\033[27;1H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%RATEOFSPAWNWALKERS)) {
+  if (!(rand()%(RATEOFSPAWNWALKERS/speed))) {
     AddWalker(W,21,29,SOUTH,M);
   }//printf("\033[30;22H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%RATEOFSPAWNWALKERS)) {
+  if (!(rand()%(RATEOFSPAWNWALKERS/speed))) {
     AddWalker(W,29,29,SOUTH,M);
   }//printf("\033[30;30H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%RATEOFSPAWNWALKERS)) {
+  if (!(rand()%(RATEOFSPAWNWALKERS/speed))) {
     AddWalker(W,108,20,SOUTH,M);
   }//printf("\033[21;109H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%RATEOFSPAWNWALKERS)) {
+  if (!(rand()%(RATEOFSPAWNWALKERS/speed))) {
     AddWalker(W,93,29,SOUTH,M);
   }//printf("\033[30;94H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%RATEOFSPAWNWALKERS)) {
+  if (!(rand()%(RATEOFSPAWNWALKERS/speed))) {
     AddWalker(W,72,29,SOUTH,M);
   }//printf("\033[30;73H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%RATEOFSPAWNWALKERS)) {
+  if (!(rand()%(RATEOFSPAWNWALKERS/speed))) {
     AddWalker(W,80,29,SOUTH,M);
   }//printf("\033[30;81H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%RATEOFSPAWNWALKERS)) {
+  if (!(rand()%(RATEOFSPAWNWALKERS/speed))) {
     AddWalker(W,3,26,SOUTH,M);
   }//printf("\033[27;4H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%RATEOFSPAWNWALKERS)) {
+  if (!(rand()%(RATEOFSPAWNWALKERS/speed))) {
     AddWalker(W,10,26,SOUTH,M);
   }//printf("\033[27;11H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%RATEOFSPAWNWALKERS)) {
+  if (!(rand()%(RATEOFSPAWNWALKERS/speed))) {
     AddWalker(W,17,26,SOUTH,M);
   }//printf("\033[27;18H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%RATEOFSPAWNWALKERS)) {
+  if (!(rand()%(RATEOFSPAWNWALKERS/speed))) {
     AddWalker(W,7,4,SOUTH,M);
   }//printf("\033[5;8H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%RATEOFSPAWNWALKERS)) {
+  if (!(rand()%(RATEOFSPAWNWALKERS/speed))) {
     AddWalker(W,33,12,SOUTH,M);
   }//printf("\033[13;34H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%RATEOFSPAWNWALKERS)) {
+  if (!(rand()%(RATEOFSPAWNWALKERS/speed))) {
     AddWalker(W,93,24,SOUTH,M);
   }//printf("\033[25;94H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%RATEOFSPAWNWALKERS)) {
+  if (!(rand()%(RATEOFSPAWNWALKERS/speed))) {
     AddWalker(W,93,26,SOUTH,M);
   }//printf("\033[27;94H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%RATEOFSPAWNWALKERS)) {
+  if (!(rand()%(RATEOFSPAWNWALKERS/speed))) {
     AddWalker(W,93,28,SOUTH,M);
   }//printf("\033[29;94H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%RATEOFSPAWNWALKERS)) {
+  if (!(rand()%(RATEOFSPAWNWALKERS/speed))) {
     AddWalker(W,99,24,SOUTH,M);
   }//printf("\033[25;100H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%RATEOFSPAWNWALKERS)) {
+  if (!(rand()%(RATEOFSPAWNWALKERS/speed))) {
     AddWalker(W,99,26,SOUTH,M);
   }//printf("\033[27;100H%s %s",COLOR.BGRE, COLOR.RES);
-  if (!(rand()%RATEOFSPAWNWALKERS)) {
+  if (!(rand()%(RATEOFSPAWNWALKERS/speed))) {
     AddWalker(W,99,28,SOUTH,M);
   }//printf("\033[29;100H%s %s",COLOR.BGRE, COLOR.RES);
 }
@@ -1086,8 +1086,8 @@ void FlowMode() {
   while(1) {
     UpdateFires(F,&M);
     River(tim,&M);
-    AddWalkers(W,&M,tim);
-    AddCars(C,&M,tim);
+    AddWalkers(W,&M,tim,1);
+    AddCars(C,&M,tim,1);
     EraseTrains(T,&M);
     EraseWalkers(W,&M);
     EraseCars(C,&M);
@@ -1105,7 +1105,7 @@ void FlowMode() {
     PrintFires(F,&M);
     printf("\033[37;1H%s", COLOR.RES);
     fflush(stdout);
-    usleep(150000);
+    usleep(300000);
     // getchar();
     tim ++;
     if (key_pressed() == 'q')
@@ -1119,14 +1119,55 @@ void FlowMode() {
   RemoveFires(F);
 }
 void DangerMode() {
-  printf("\033[2J\033[1;1H%s", COLOR.RES);
+  int tim = 0;
+  map M;
+  LoadMap(&M,"data/map_rendu","data/map_color","data/pieton_carac","data/voiture_carac","data/train_carac","data/map_carac");
+  walker *W[NUMBEROFWALKERS] = {NULL};
+  car *C[NUMBEROFCARS] = {NULL};
+  train *T[2] = {NULL};
+  parking P[10];
+  SetParkings(P);
+  InitRiver(&M);
+  River(0,&M);
+  AffMap(&M);
   while(1) {
-    char *Colors[8] = {COLOR.FBLA,COLOR.FRED,COLOR.FGRE,COLOR.FYEL,COLOR.FBLU,COLOR.FMAG,COLOR.FCYA,COLOR.FWHI};
-    printf("\033[%d;%dH%sWorkInProgress...",(rand()%35)+1,rand()%106+1, Colors[rand()%8]);
+    River(tim,&M);
+    AddWalkers(W,&M,tim,3);
+    AddCars(C,&M,tim,3);
+    EraseTrains(T,&M);
+    EraseWalkers(W,&M);
+    EraseCars(C,&M);
+    UpdateTrains(T,tim);
+    UpdateWalkers(W,&M);
+    UpdateCars(C,&M);
+    TrainWalkerSpawn(T,W,&M);
+    Parks(P,C,W,&M);
+    RemoveWalkersOutside(W,&M);
+    RemoveCarsOutside(C,&M);
+    CleanMap(&M);
+    PrintTrains(T,&M);
+    PrintWalkers(W,&M);
+    PrintCars(C,&M);
+    printf("\033[37;1H%s", COLOR.RES);
     fflush(stdout);
-    usleep(10000);
-    if (key_pressed() == 'q') break;
+    usleep(150000);
+    tim ++;
+    if (key_pressed() == 'q')
+      break;
   }
+  RemoveWalkers(W,&M);
+  RemoveCars(C,&M);
+  RemoveTrains(T);
+  printf("\033[37;1H%s", COLOR.RES);
+  freemap(&M);
+  // printf("\033[2J\033[1;1H%s", COLOR.RES);
+  // while(1) {
+  //   char *Colors[8] = {COLOR.FBLA,COLOR.FRED,COLOR.FGRE,COLOR.FYEL,COLOR.FBLU,COLOR.FMAG,COLOR.FCYA,COLOR.FWHI};
+  //   printf("\033[%d;%dH%sWorkInProgress...",(rand()%35)+1,rand()%106+1, Colors[rand()%8]);
+  //   fflush(stdout);
+  //   usleep(10000);
+  //   if (key_pressed() == 'q') break;
+  // }
 }
 
 void PrintArrow(int x, int y, char* color){
@@ -1193,10 +1234,6 @@ char Menu (char *FileName) {
   }
 }
 
-// int main(){
-//   PrintArrow(10,20,COLOR.FRED);
-//   return 0;
-// }
 
 int main(int argc, char **argv) {
   srand(time(NULL));
