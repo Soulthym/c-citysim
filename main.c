@@ -1105,7 +1105,8 @@ void FlowMode() {
     PrintFires(F,&M);
     printf("\033[37;1H%s", COLOR.RES);
     fflush(stdout);
-    usleep(300000);
+    // usleep(300000);
+    usleep(60000);
     // getchar();
     tim ++;
     if (key_pressed() == 'q')
